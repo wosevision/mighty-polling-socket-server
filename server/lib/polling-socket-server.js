@@ -18,6 +18,7 @@ const { RxHttpRequest } = require('rx-http-request');
  * @param {number} [params.defaultInterval=2000] Global time interval if none supplied
  * @param {boolean} [params.checkHeartbeat=false] Enable periodic checks for dropped connections
  * @param {object} [params.expressApp] Bring your own `express()` app with routes configured
+ * @param {object} [params.requestOptions] Default options for every http request
  * @param {object} [params.wsOptions] Options to pass into `ws` socket server
  */
 class PollingSocketServer {
@@ -25,8 +26,13 @@ class PollingSocketServer {
     defaultInterval = 2000,
     checkHeartbeat = false,
     expressApp = express(),
-    wsOptions = {}
+    requestOptions,
+    wsOptions
   } = {}) {
+    /**
+     * Save some options to parameter map.
+     */
+    this._params = { defaultInterval, requestOptions };
     /**
      * Creates an `express` app, mounts the express app
      * onto an `express-ws` instance, and saves a reference
@@ -41,7 +47,6 @@ class PollingSocketServer {
      * property to hold default interval value.
      */
     this.interval$ = {};
-    this._defaultInterval = defaultInterval;
 
     /**
      * Maps to hold:
@@ -178,14 +183,15 @@ class PollingSocketServer {
   _getPoll({
     type,
     url,
-    interval,
+    options = {},
+    interval = this._params.defaultInterval,
     compare = (_, __) => (_ === __),
     transform = _ => _,
     xml = false,
   }) {
-    return this._getInterval(interval || this._defaultInterval)
+    return this._getInterval(interval)
       .do(data => console.log(`[polling] checking: ${type}`))
-      .switchMap(() => RxHttpRequest.get(url))
+      .switchMap(() => RxHttpRequest.get(url, { ...this._params.requestOptions, ...options }))
       .do(data => console.log(`[polling] checked: ${type}`))
       .map(response => response.body)
       .parseXML(xml)
