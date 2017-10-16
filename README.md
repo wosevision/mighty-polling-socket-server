@@ -281,6 +281,7 @@ None yet, TBD.
 * [Express](https://expressjs.com/) - Fast, unopinionated, minimalist web framework for Node.js
 * [express-ws](https://github.com/HenningM/express-ws) - WebSocket endpoints for Express applications
 * [ws](https://github.com/websockets/ws) - Simple to use, blazing fast and thoroughly tested WebSocket client and server for Node.js
+* [rx-http-request](https://github.com/njl07/rx-http-request) - The world-famous HTTP client Request now RxJS compliant
 * [xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) - Simple XML to JavaScript object converter
 
 ## License
