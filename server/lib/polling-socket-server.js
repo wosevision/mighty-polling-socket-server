@@ -10,6 +10,16 @@ const expressWs = require('express-ws')
  */
 const { Observable, BehaviorSubject } = require('./rxjs');
 
+/**
+ * Core class for instantiating a new server.
+ * 
+ * @class PollingSocketServer
+ * @param {object} [params] Optional configuration parameters 
+ * @param {number} [params.defaultInterval=2000] Global time interval if none supplied
+ * @param {boolean} [params.checkHeartbeat=false] Enable periodic checks for dropped connections
+ * @param {object} [params.expressApp] Bring your own `express()` app with routes configured
+ * @param {object} [params.wsOptions] Options to pass into `ws` socket server
+ */
 class PollingSocketServer {
   constructor() {
     /**
@@ -119,8 +129,14 @@ class PollingSocketServer {
     });
   }
 
+  /**
+   * Activates socket server and Express app; listens on given port.
+   * 
+   * @param {number} [port=8080] The port to listen on
+   * @memberof PollingSocketServer
+   */
   broadcast(port = 8080) {
-    return this.app.listen(port);
+    this.app.listen(port);
   }
 
   /**
@@ -192,7 +208,7 @@ class PollingSocketServer {
        */
       this.interval$[interval] = Observable.interval(interval)
         .pausable(this.paused$)
-        .do(tick => console.log(`[interval] tick ${tick}`))
+        .do(tick => console.log(`[interval] ${interval}ms, tick ${tick}`))
         .share();
     }
     /**
@@ -206,6 +222,8 @@ class PollingSocketServer {
    * Returns an Observable that tracks all connection events
    * (open and close) in a single source and reports the number
    * of active connections when it changes.
+   * 
+   * @memberof PollingSocketServer
    */
   _getConnections() {
     /**
