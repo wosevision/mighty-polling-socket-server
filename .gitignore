@@ -57,6 +57,5 @@ typings/
 # dotenv environment variables file
 .env
 
-# client files
-client/
+# built testing files
 public/
