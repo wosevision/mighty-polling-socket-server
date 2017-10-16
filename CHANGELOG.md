@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - a socket heartbeat checker
   - the ability to bring your own express app
   - options for passing to `ws`
+  - options to set for every HTTP request
+- Source configuration property `options` for passing HTTP options to different poll types
+
+### Changed
+- Switched `axios` to `rx-http-request` for reactive holistics
 
 ## [1.0.0] - 2017-10-15
 ### Added

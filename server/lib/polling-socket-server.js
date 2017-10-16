@@ -169,14 +169,13 @@ class PollingSocketServer {
    * - passing transformed data to the source's associated `BehaviorSubject`
    * so it can be aggregated into that sources observable data feed
    * 
-   * @param {any} {
-   *     type,
-   *     url,
-   *     compare = (_, __) => (_ === __),
-   *     transform = _ => _,
-   *     xml = false,
-   *     interval = 1000
-   *   } 
+   * @param {object} params
+   * @param {string} type The data/message type
+   * @param {string} url The endpoint to poll via http
+   * @param {object} options Optional request options for this poll
+   * @param {(oldData, newData) => boolean} compare A comparison function
+   * @param {(data) => any} transform A transformation function
+   * @param {boolean} xml Whether to parse data as XML
    * @returns {Observable<any>}
    * @memberof PollingSocketServer
    */
