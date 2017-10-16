@@ -1,7 +1,6 @@
 const path = require('path');
-const axios = require('axios');
 const express = require('express');
-const expressWs = require('express-ws')
+const expressWs = require('express-ws');
 
 /**
  * Import specialized versions of `Observable` and `BehaviorSubject`
@@ -9,6 +8,7 @@ const expressWs = require('express-ws')
  * instance methods.
  */
 const { Observable, BehaviorSubject } = require('./rxjs');
+const { RxHttpRequest } = require('rx-http-request');
 
 /**
  * Core class for instantiating a new server.
@@ -168,12 +168,12 @@ class PollingSocketServer {
     compare = (_, __) => (_ === __),
     transform = _ => _,
     xml = false,
-  }) {
+  }) {  
     return this._getInterval(interval)
       .do(data => console.log(`[polling] checking: ${type}`))
-      .switchMap(() => Observable.fromPromise(axios.get(url)))
+      .switchMap(() => RxHttpRequest.get(url))
       .do(data => console.log(`[polling] checked: ${type}`))
-      .map(response => response.data)
+      .map(response => response.body)
       .parseXML(xml)
       .distinctUntilChanged(compare)
       .map(transform)
