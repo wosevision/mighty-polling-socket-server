@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- New configuration options that enable:
+  - a default interval to be set
+  - a socket heartbeat checker
+  - the ability to bring your own express app
+  - options for passing to `ws`
 
 ## [1.0.0] - 2017-10-15
 ### Added
