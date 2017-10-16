@@ -21,20 +21,27 @@ const { Observable, BehaviorSubject } = require('./rxjs');
  * @param {object} [params.wsOptions] Options to pass into `ws` socket server
  */
 class PollingSocketServer {
-  constructor() {
+  constructor({
+    defaultInterval = 2000,
+    checkHeartbeat = false,
+    expressApp = express(),
+    wsOptions = {}
+  } = {}) {
     /**
      * Creates an `express` app, mounts the express app
      * onto an `express-ws` instance, and saves a reference
      * to the socket server for later use.
      */
-    this.app = express();
-    this.wss = expressWs(this.app).getWss();
+    this.app = expressApp;
+    this.wss = expressWs(this.app, null, { wsOptions }).getWss();
     
     /**
      * A map to hold pausable intervals, which ensures there is
-     * at most one interval running per interval time value.
+     * at most one interval running per interval time value;
+     * property to hold default interval value.
      */
     this.interval$ = {};
+    this._defaultInterval = defaultInterval;
 
     /**
      * Maps to hold:
@@ -64,6 +71,13 @@ class PollingSocketServer {
       .map(() => this.wss.clients.size === 0)
       .distinctUntilChanged()
       .do(status => console.log(`[interval] ${status ? 'idle' : 'active'}`));
+
+    /**
+     * Enable periodic checks for dropped connections if enabled.
+     */
+    if (checkHeartbeat) {
+      this._enableHeartbeatCheck();
+    }
 
   }
 
@@ -169,7 +183,7 @@ class PollingSocketServer {
     transform = _ => _,
     xml = false,
   }) {
-    return this._getInterval(interval)
+    return this._getInterval(interval || this._defaultInterval)
       .do(data => console.log(`[polling] checking: ${type}`))
       .switchMap(() => Observable.fromPromise(axios.get(url)))
       .do(data => console.log(`[polling] checked: ${type}`))
@@ -200,7 +214,7 @@ class PollingSocketServer {
    * @returns {Observable<number>}
    * @memberof PollingSocketServer
    */
-  _getInterval(interval = 1000) {
+  _getInterval(interval) {
     if (!this.interval$[interval]) {
       /**
        * If there is no interval already saved in the `interval$` map
@@ -230,14 +244,14 @@ class PollingSocketServer {
      * Emits incoming socket connections as they connect
      * and shares the connection with all its subscribers.
      */
-    const connectionOpened$ = Observable
+    this.connectionOpened$ = Observable
       .fromEvent(this.wss, 'connection')
       .share();
     /**
      * Takes an incoming socket connection and maps it to
      * an observable for the closing of that connection.
      */
-    const connectionClosed$ = connectionOpened$
+    this.connectionClosed$ = this.connectionOpened$
       .flatMap(ws => Observable.fromEvent(ws, 'close'))
       .mapTo(false);
 
@@ -246,7 +260,7 @@ class PollingSocketServer {
      * and `false` when a connection has closed.
      */
     return Observable
-      .merge(connectionOpened$, connectionClosed$)
+      .merge(this.connectionOpened$, this.connectionClosed$)
       .do(state => console.log(`[websocket] client ${state ? '' : 'dis'}connected, pool: ${this.wss.clients.size}`));
   }
   
@@ -289,6 +303,32 @@ class PollingSocketServer {
       feed.unsubscribe();
       closed.unsubscribe();
     })
+  }
+
+  /**
+   * Sets up the optional "heartbeat check", which subscribes to
+   * new connections' `pong` events to periodically check that the
+   * connection wasn't dropped in tandem with a 30 second interval.
+   * 
+   * @memberof PollingSocketServer
+   */
+  _enableHeartbeatCheck() {
+    const heartbeat = function (ev) {
+      console.log('[heartbeat]\n', ev);
+      this.isAlive = true;
+    };
+    this._getInterval(30000)
+      .do(() => this.wss.clients.forEach(ws => {
+        if (ws.isAlive === false) return ws.terminate();
+        ws.isAlive = false;
+        ws.ping('', false, true);
+      }));
+    this.connectionOpened$
+      .switchMap(ws => {
+        ws.isAlive = true;
+        return Observable.fromEvent(ws, 'pong')
+      })
+      .subscribe(heartbeat);
   }
 }
 
