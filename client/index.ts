@@ -1,5 +1,6 @@
 import {
-  EmergencyFeed,
+  SocketPollClient,
+  FeedReader,
   DomBuddy
 } from './lib';
 
@@ -11,14 +12,15 @@ import {
 const REDIRECT_URL = 'http://uoit.ca/emergency';
 
 const dom = new DomBuddy();
-const feed = new EmergencyFeed(TYPE_DISRUPTION, TYPE_EMERGENCY);
+const feed = new FeedReader();
+const client = new SocketPollClient();
 
-feed.onServiceDisruption(items => {
-  const newsItems = items.map(item => `<div class="emergencyNewsItem">
+client.on(TYPE_DISRUPTION, ({ data }) => {
+  const newsItems = feed.parseServiceDisruptions(data).map(item => `<div class="emergencyNewsItem">
     <a href="${ item.link }" title="${ item.title }"><img src="${ item.mediaContent }" alt="${ item.mediaDescription }" width="100" height="67"></a>
     <p><strong><a href="${ item.link }">${ item.title }</strong></a></p>
     <p class="date">${ item.pubDate }</p>
-  </div>`)
+  </div>`);
 
   if (newsItems.length) {
     const header = '<hr><h2>Service disruption news</h2>';
@@ -32,8 +34,8 @@ feed.onServiceDisruption(items => {
   }
 });
 
-feed.onEmergencyMessage(items => {
-  const newsItems = items.map(item => `<div class="emergencyMessageBar">
+client.on(TYPE_EMERGENCY, ({ data }) => {
+  const newsItems = feed.parseEmergencyMessages(data).map(item => `<div class="emergencyMessageBar">
     <div class="row">
       <a href="${REDIRECT_URL}">
         <div class="emergencyAlert">
@@ -46,9 +48,7 @@ feed.onEmergencyMessage(items => {
         </div>
       </a>
     </div>
-  </div>`)
-  
-
+  </div>`);
 
   if (newsItems.length) {
     const header = '<hr><h2>Emergency messages</h2>';

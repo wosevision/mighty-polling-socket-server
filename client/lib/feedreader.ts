@@ -30,5 +30,5 @@ export class FeedReader {
     const channelItems = data.rss.channel[0].item;
     return channelItems.map(item => new EmergencyMessage(item));
   }
-  parseWeatherAlerts(items) { return [...items]; }
+  parseWeatherAlerts(data) { return [...data]; }
 }
