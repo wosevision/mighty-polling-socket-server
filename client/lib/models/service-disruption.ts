@@ -1,19 +1,13 @@
-import { MessageBase, RawBase } from '.';
+import { MessageBase } from '.';
 
 export const TYPE_DISRUPTION = 'disruption';
 export type TYPE_DISRUPTION = typeof TYPE_DISRUPTION;
 
-interface RawMedia {
-  $: {
-    description: string;
-    url: string;
-  }
-  ['media:description']: string[];
+export type ServiceDisruptionRSSItemContent = {
+  summary: string;
+  article: string;
 }
-
-interface RawServiceDisruption extends RawBase {
-  ['media:content']: RawMedia[];
-}
+export type ServiceDisruptionRSSItem = RSS.Extras.ItemWithMedia & XML.WithContent<ServiceDisruptionRSSItemContent>
 
 export class ServiceDisruption extends MessageBase {
   title: string;
@@ -21,13 +15,13 @@ export class ServiceDisruption extends MessageBase {
   link: string;
   guid: string;
   summary: string;
-  category: string[];
+  category: string;
   pubDate: string;
   article: string;
   mediaContent?: string;
   mediaDescription?: string;
 
-  constructor(item: RawServiceDisruption) {
+  constructor(item: ServiceDisruptionRSSItem) {
     super();
     const content = this.extractContent(item);
     Object.assign(this, content);
@@ -35,11 +29,11 @@ export class ServiceDisruption extends MessageBase {
 
   private extractContent?({
     title: [title], description: [description], link: [link],
-    guid: [guid], summary: [summary], category,
+    guid: [{ _: guid }], summary: [summary],
     article: [article], pubDate: [pubDate],
-    ['media:content']: rawMedia
-  }: RawServiceDisruption): ServiceDisruption {
-    let media = {};
+    category: rawCategory, ['media:content']: rawMedia
+  }: ServiceDisruptionRSSItem): ServiceDisruption {
+    let category, media = {};
 
     if (rawMedia && rawMedia.length) {
       const [{
@@ -48,9 +42,14 @@ export class ServiceDisruption extends MessageBase {
       media = { mediaContent, mediaDescription };
     }
 
+    if (rawCategory && rawCategory.length) {
+      const [{ _: categoryText }] = rawCategory;
+      category = categoryText;
+    }
+
     return {
       title, description, link,
-      guid, summary, category,
+      guid, summary, ...{ category },
       pubDate: this.formatDate(pubDate),
       article, ...media
     };

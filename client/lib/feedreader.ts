@@ -1,5 +1,6 @@
 import {
   ServiceDisruption,
+  ServiceDisruptionRSSItem,
   EmergencyMessage,
 } from './models'
 
@@ -22,9 +23,9 @@ import {
  * @class FeedReader
  */
 export class FeedReader {
-  parseServiceDisruptions(data) {
+  parseServiceDisruptions(data: { rss: RSS.Feed }) {
     const channelItems = data.rss.channel[0].item;
-    return channelItems.map(item => new ServiceDisruption(item));
+    return channelItems.map(item => new ServiceDisruption(<ServiceDisruptionRSSItem>item));
   }
   parseEmergencyMessages(data) {
     const channelItems = data.rss.channel[0].item;

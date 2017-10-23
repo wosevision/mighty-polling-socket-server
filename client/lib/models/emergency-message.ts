@@ -1,4 +1,4 @@
-import { MessageBase, RawBase } from '.';
+import { MessageBase } from '.';
 
 export const TYPE_EMERGENCY = 'emergency';
 export type TYPE_EMERGENCY = typeof TYPE_EMERGENCY;
@@ -10,7 +10,7 @@ export class EmergencyMessage extends MessageBase {
   guid: string;
   pubDate: string;
 
-  constructor(item: RawBase) {
+  constructor(item: RSS.Item) {
     super();
     const content = this.extractContent(item);
     Object.assign(this, content);
@@ -18,8 +18,8 @@ export class EmergencyMessage extends MessageBase {
 
   private extractContent?({
     title: [title], description: [description],
-    link: [link], guid: [guid], pubDate: [pubDate]
-  }: RawBase): EmergencyMessage {
+    link: [link], guid: [{ _: guid }], pubDate: [pubDate]
+  }: RSS.Item): EmergencyMessage {
     return {
       title, description, link,
       guid, pubDate: this.formatDate(pubDate),
