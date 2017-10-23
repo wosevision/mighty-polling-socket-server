@@ -119,5 +119,5 @@ declare module RSS {
   type FeedContent = {
     channel: Channel
   };
-  export type Feed = XML.ContentWithMetadata<FeedContent, FeedMetadata>
+  export type Feed = XML.ContentWithMetadata<FeedContent, FeedMetadata>;
 }

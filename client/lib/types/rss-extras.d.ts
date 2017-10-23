@@ -15,7 +15,6 @@ declare module RSS {
     };
     export type Media = XML.WithContent<MediaContent>;
     export type ItemWithMedia = XML.WithContent<ItemContent & MediaContent>;
-    export type Item = Item | ItemWithMedia;
 
     /**
      * Atom10
@@ -31,7 +30,6 @@ declare module RSS {
     }
     export type Atom10 = XML.WithContent<Atom10Content>;
     export type ChannelWithAtom10 = XML.WithContent<ChannelContent & Atom10Content>;
-    export type Channel = Channel | ChannelWithAtom10;
 
     /**
      * Feedburner
@@ -45,6 +43,5 @@ declare module RSS {
     }
     export type Feedburner = XML.WithContent<FeedburnerContent>;
     export type ChannelWithFeedburner = XML.WithContent<ChannelContent & FeedburnerContent>;
-    export type Channel = Channel | ChannelWithFeedburner;
   }
 }
