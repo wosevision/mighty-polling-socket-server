@@ -1,5 +1,11 @@
 import { SocketConnection } from '.';
 
+/** Type for messages returned from socket server */
+export type SocketPollMessage<T extends string, D> = {
+  type: T,
+  data: D
+};
+
 /**
  * This class represents the base hub for all socket poll related
  * messaging and action. Its primary purpose is to pre-initialize a
@@ -23,7 +29,13 @@ export class SocketPollClient {
     [type: string]: (items: any) => void
   } = {};
 
-  on<T>(type: string, callback: (items: T) => void) {
+  /**
+   * @template T 
+   * @param {string} type 
+   * @param {(items: T) => void} callback 
+   * @memberof SocketPollClient
+   */
+  on<T extends string, D>(type: T, callback: (eventData: SocketPollMessage<T, D>) => void) {
     this._typeCallbacks[type] = callback;
     this.addSocketListener(type);
   }
@@ -34,11 +46,14 @@ export class SocketPollClient {
    * message to this class' `onMessage` method.
    * 
    * @private
+   * @template T 
+   * @template D 
+   * @param {T} type 
    * @memberof SocketPollClient
    */
-  private addSocketListener(type: string) {
+  private addSocketListener<T extends string, D>(type: T) {
     const socket = new SocketConnection(null, type)
-    socket.onMessage(event => this.onMessage(type, event));
+    socket.onMessage(event => this.onMessage<T, D>(type, event));
     console.log(`[socket] added listener for "${type}"`);
   }
 
@@ -49,12 +64,14 @@ export class SocketPollClient {
    * first argument.
    * 
    * @private
-   * @param {string} type 
+   * @template T 
+   * @template D 
+   * @param {T} type 
    * @param {MessageEvent} event 
    * @memberof SocketPollClient
    */
-  private onMessage(type: string, event: MessageEvent) {
-    const eventData = JSON.parse(event.data);
+  private onMessage<T extends string, D>(type: T, event: MessageEvent) {
+    const eventData: SocketPollMessage<T, D> = JSON.parse(event.data);
     console.log(`[socket] ${eventData.type} message received`, eventData);
     this._typeCallbacks[type](eventData);
   }
