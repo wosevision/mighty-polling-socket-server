@@ -14,8 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - options to set for every HTTP request
 - Source configuration property `options` for passing HTTP options to different poll types
 
+## [1.0.1] - 2017-10-25
 ### Changed
-- Switched `axios` to `rx-http-request` for reactive holistics
+- Switched `axios` to `rx-http-request` for a more "reactive" approach to HTTP
 
 ## [1.0.0] - 2017-10-15
 ### Added
