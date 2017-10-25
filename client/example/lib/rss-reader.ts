@@ -1,8 +1,4 @@
-import {
-  ServiceDisruption,
-  ServiceDisruptionRSSItem,
-  EmergencyMessage,
-} from './models'
+export type RSSFeed = { rss: RSS.Feed };
 
 /**
  * Utility class for parsing feed types into fully-instantiated
@@ -22,14 +18,15 @@ import {
  * @export
  * @class FeedReader
  */
-export class FeedReader {
-  parseServiceDisruptions(data: { rss: RSS.Feed }) {
-    const channelItems = data.rss.channel[0].item;
-    return channelItems.map(item => new ServiceDisruption(<ServiceDisruptionRSSItem>item));
+export class RSSReader {
+  getItems<I extends RSS.Item, T>(data: RSSFeed, transform?: (item: I) => T): (T | I)[] {
+    let channelItems: (T | I)[];
+    try {
+      channelItems = <I[]>data.rss.channel[0].item;
+    } catch (err) {
+      console.error(`Error parsing RSS items: ${err}`);
+      channelItems = [];
+    }
+    return transform ? channelItems.map(transform) : channelItems;
   }
-  parseEmergencyMessages(data) {
-    const channelItems = data.rss.channel[0].item;
-    return channelItems.map(item => new EmergencyMessage(item));
-  }
-  parseWeatherAlerts(data) { return [...data]; }
 }

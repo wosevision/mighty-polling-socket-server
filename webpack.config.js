@@ -23,7 +23,7 @@ const babelOptions = {
 }
 
 module.exports = removeEmpty({
-  entry: './client/index.ts',
+  entry: './client/example/index.ts',
 
   output: {
     filename: ifProduction('[name]-bundle-[hash].js', '[name]-bundle.js'),
@@ -96,7 +96,7 @@ module.exports = removeEmpty({
     new HtmlWebpackPlugin({
       hash: true,
       filename: 'index.html',
-      template: './client/index.ejs',
+      template: './client/example/index.ejs',
       inject: false,
       environment: nodeEnv,
     }),
