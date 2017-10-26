@@ -27,7 +27,7 @@ export class RSSUtility {
   checkTakeover(data: RSSFeed) {
     let cookieDate;
     try {
-      const pubDate = data.rss.channel[0].pubDate[0] || data.rss.channel[0].item[0].pubDate[0];
+      const pubDate = (data.rss.channel[0].pubDate || data.rss.channel[0].item[0].pubDate)[0];
       cookieDate = new Date(pubDate).getTime().toString();
     } catch (err) {
       console.warn(`Error parsing RSS pubDate: ${err}`);

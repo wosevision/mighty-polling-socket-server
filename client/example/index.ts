@@ -1,5 +1,5 @@
 import { SocketPollClient } from '../lib';
-import './main.scss';
+import './styles/main.scss';
 
 import {
   RSSUtility,
@@ -26,7 +26,6 @@ rss.onTakeover(() => {
 });
 
 client.on<TYPE_DISRUPTION, RSSFeed>(TYPE_DISRUPTION, ({ data }) => {
-  rss.checkTakeover(data);
   const newsItems = rss.parseItems(data, (item: ServiceDisruptionRSSItem) => new ServiceDisruption(item))
     .map((item: ServiceDisruption)  => `<div class="emergencyNewsItem">
       <a href="${ item.link }" title="${ item.title }"><img src="${ item.mediaContent }" alt="${ item.mediaDescription }" width="100" height="67"></a>
@@ -47,6 +46,7 @@ client.on<TYPE_DISRUPTION, RSSFeed>(TYPE_DISRUPTION, ({ data }) => {
 });
 
 client.on<TYPE_EMERGENCY, RSSFeed>(TYPE_EMERGENCY, ({ data }) => {
+  rss.checkTakeover(data);
   const newsItems = rss.parseItems(data, item => new EmergencyMessage(item))
     .map(item => `<div class="emergencyMessageBar">
       <div class="row">
