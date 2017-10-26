@@ -1,2 +1,2 @@
 export * from './dom';
-export * from './rss-reader';
+export * from './rss';

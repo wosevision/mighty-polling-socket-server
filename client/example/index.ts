@@ -1,7 +1,8 @@
 import { SocketPollClient } from '../lib';
+import './main.scss';
 
 import {
-  RSSReader,
+  RSSUtility,
   RSSFeed,
   DomBuddy
 } from './lib';
@@ -16,11 +17,17 @@ import {
 const REDIRECT_URL = 'http://uoit.ca/emergency';
 
 const dom = new DomBuddy();
-const feed = new RSSReader();
+const rss = new RSSUtility();
 const client = new SocketPollClient();
 
+rss.onTakeover(() => {
+  console.info('[rss-utility] takeover occurred');
+  rss.notifyUser('Taking over!', null, 'alert', () => alert('taken over!'));
+});
+
 client.on<TYPE_DISRUPTION, RSSFeed>(TYPE_DISRUPTION, ({ data }) => {
-  const newsItems = feed.getItems<ServiceDisruptionRSSItem, ServiceDisruption>(data, item => new ServiceDisruption(item))
+  rss.checkTakeover(data);
+  const newsItems = rss.parseItems(data, (item: ServiceDisruptionRSSItem) => new ServiceDisruption(item))
     .map((item: ServiceDisruption)  => `<div class="emergencyNewsItem">
       <a href="${ item.link }" title="${ item.title }"><img src="${ item.mediaContent }" alt="${ item.mediaDescription }" width="100" height="67"></a>
       <p><strong><a href="${ item.link }">${ item.title }</strong></a></p>
@@ -40,7 +47,7 @@ client.on<TYPE_DISRUPTION, RSSFeed>(TYPE_DISRUPTION, ({ data }) => {
 });
 
 client.on<TYPE_EMERGENCY, RSSFeed>(TYPE_EMERGENCY, ({ data }) => {
-  const newsItems = feed.getItems(data, item => new EmergencyMessage(item))
+  const newsItems = rss.parseItems(data, item => new EmergencyMessage(item))
     .map(item => `<div class="emergencyMessageBar">
       <div class="row">
         <a href="${REDIRECT_URL}">
