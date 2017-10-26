@@ -11,7 +11,7 @@ const COOKIE_NAME = 'last-takeover';
  */
 export class RSSUtility {
 
-  private _onTakeover: () => void;
+  private _onFirstView: (data?: RSSFeed) => void;
   
   parseItems<I extends RSS.Item, T>(data: RSSFeed, transform?: (item: I) => T): (T | I)[] {
     let channelItems: (T | I)[];
@@ -24,7 +24,7 @@ export class RSSUtility {
     return transform ? channelItems.map(transform) : channelItems;
   }
 
-  checkTakeover(data: RSSFeed) {
+  trackLastViewed(data: RSSFeed) {
     let cookieDate;
     try {
       const pubDate = (data.rss.channel[0].pubDate || data.rss.channel[0].item[0].pubDate)[0];
@@ -33,16 +33,16 @@ export class RSSUtility {
       console.warn(`Error parsing RSS pubDate: ${err}`);
       return;
     }
-    const lastTakeoverPubDate = this._getCookie(COOKIE_NAME);
-    console.log(cookieDate, lastTakeoverPubDate)
-    if (cookieDate !== lastTakeoverPubDate) {
+    const lastViewedPubDate = this._getCookie(COOKIE_NAME);
+    console.log(cookieDate, lastViewedPubDate)
+    if (cookieDate !== lastViewedPubDate) {
       this._setCookie(COOKIE_NAME, cookieDate);
-      this._onTakeover();
+      this._onFirstView(data);
     }
   }
 
-  onTakeover(callback: () => void) {
-    this._onTakeover = callback;
+  onFirstView(callback: (data?) => void) {
+    this._onFirstView = callback;
   }
 
   private _getCookie(name) {

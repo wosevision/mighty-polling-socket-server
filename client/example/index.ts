@@ -23,37 +23,6 @@ const rss = new RSSUtility();
 const toast = new Notification();
 const client = new SocketPollClient();
 
-rss.onTakeover(() => {
-  console.info('[rss-utility] takeover occurred');
-  toast.notify(`<span class="icon_emergency alert text-larger"></span> <strong>Notice:</strong> You are about to be redirected to an emergency message!<br/><small>Redirecting in:</small> <strong class="countdown"></strong>`, {
-    duration: 5000,
-    className: 'alert',
-    position: {
-      // left: true,
-      right: true,
-      // top: true,
-      bottom: true
-    },
-    // disableAnimation: true,
-    onNotify() {
-      let secondsLeft = 5;
-      const countdownEl: Element = [...this.childNodes].find((el: Element) => {
-        return el.classList && el.classList.contains('countdown')
-      });
-      countdownEl.innerHTML = `${secondsLeft} seconds`;
-      const ticker = setInterval(() => {
-        if (secondsLeft > 0) {
-          secondsLeft--;
-          countdownEl.innerHTML = `${secondsLeft} seconds`;
-        } else {
-          countdownEl.innerHTML = '';
-          clearInterval(ticker);
-        }
-      }, 1000)
-    }
-  });
-});
-
 client.on<TYPE_DISRUPTION, RSSFeed>(TYPE_DISRUPTION, ({ data }) => {
   const newsItems = rss.parseItems(data, (item: ServiceDisruptionRSSItem) => new ServiceDisruption(item))
     .map((item: ServiceDisruption)  => `<div class="emergencyNewsItem">
@@ -75,7 +44,7 @@ client.on<TYPE_DISRUPTION, RSSFeed>(TYPE_DISRUPTION, ({ data }) => {
 });
 
 client.on<TYPE_EMERGENCY, RSSFeed>(TYPE_EMERGENCY, ({ data }) => {
-  rss.checkTakeover(data);
+  rss.trackLastViewed(data);
   const newsItems = rss.parseItems(data, item => new EmergencyMessage(item))
     .map(item => `<div class="emergencyMessageBar">
       <div class="row">
@@ -102,4 +71,31 @@ client.on<TYPE_EMERGENCY, RSSFeed>(TYPE_EMERGENCY, ({ data }) => {
       .then.append(html).to(container)
       // .then.removeClass('test').from(container)
   }
+});
+
+rss.onFirstView(() => {
+  toast.notify(`<span class="icon_emergency alert text-larger"></span> <strong>Notice:</strong> You are about to be redirected to an emergency message!<br/><small>Redirecting in:</small> <strong class="countdown"></strong>`, {
+    duration: 5000,
+    className: 'alert',
+    position: {
+      right: true,
+      bottom: true
+    },
+    // disableAnimation: true,
+    onNotify() {
+      let secondsLeft = 5, countdownDone = false;
+      const elements: Element[] = [...this.childNodes];
+      const countdownEl = elements.find(el => el.classList && el.classList.contains('countdown'));
+      countdownEl.innerHTML = `${secondsLeft} seconds`;
+      const ticker = setInterval(() => {
+        secondsLeft--;
+        countdownDone = secondsLeft === 0;
+        countdownEl.innerHTML = countdownDone ? 'Now!' : `${secondsLeft} seconds`;
+        countdownDone && clearInterval(ticker);
+      }, 1000)
+    },
+    onDismiss() {
+      document.location.assign(REDIRECT_URL);
+    }
+  });
 });
