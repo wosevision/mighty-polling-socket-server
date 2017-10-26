@@ -1,26 +1,29 @@
 import '../styles/notification.scss';
 
+export type NotificationOptions = Partial<{
+  duration: number,
+  className: string,
+  countdown: boolean,
+  position: Partial<{
+    left: boolean,
+    right: boolean,
+    top: boolean,
+    bottom: boolean
+  }>,
+  disableAnimation: boolean,
+  onNotify(): void,
+  onDismiss(): void
+}>;
+
 export class Notification {
-  notify(message: string, options: Partial<{
-    duration: number,
-    className: string,
-    countdown: boolean,
-    position: Partial<{
-      left: boolean,
-      right: boolean,
-      top: boolean,
-      bottom: boolean
-    }>,
-    disableAnimation: boolean,
-    onNotify(): void,
-    onDismiss(): void
-  }> = {}) {
-    const notification = this._transitionIn(message, options);
-    options.onNotify && options.onNotify.apply(notification);
+  private _options: NotificationOptions;
+
+  notify(message: string, options: NotificationOptions = {}) {
+    this._options = options;
+    const notification = this._transitionIn(message);
     if (options.duration) {
       setTimeout(() => {
-        this._transitionOut(notification, options);
-        options.onDismiss && options.onDismiss.apply(notification);
+        this._transitionOut(notification);
       }, options.duration);
     }
     return this;
@@ -30,9 +33,9 @@ export class Notification {
 
   }
 
-  private _transitionIn(message, options) {
-    const notificationClasses = this._getNotificationClasses(options);
-    if (!options.disableAnimation) {
+  private _transitionIn(message) {
+    const notificationClasses = this._getNotificationClasses(this._options);
+    if (!this._options.disableAnimation) {
       notificationClasses.push('animated', 'fadeInDown');
     }
     const template = document.createElement('template');
@@ -44,16 +47,21 @@ export class Notification {
     </div>`;
     const notification = template.content.firstChild;
     document.body.appendChild(notification);
+    this._options.onNotify && this._options.onNotify.apply(notification);
     return notification;
   }
 
-  private _transitionOut(notification, options) {
-    if (options.disableAnimation) {
-      document.body.removeChild(notification)
+  private _transitionOut(notification) {
+    if (this._options.disableAnimation) {
+      document.body.removeChild(notification);
+      this._options.onDismiss && this._options.onDismiss.apply(notification);
     } else {
       notification.classList.remove('fadeInDown');
       notification.classList.add('fadeOutUp');
-      setTimeout(() => document.body.removeChild(notification), 3000);
+      setTimeout(() => {
+        document.body.removeChild(notification);
+        this._options.onDismiss && this._options.onDismiss.apply(notification);
+      }, 1000);
     }
   }
 
