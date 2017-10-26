@@ -4,7 +4,8 @@ import './styles/main.scss';
 import {
   RSSUtility,
   RSSFeed,
-  DomBuddy
+  DomBuddy,
+  Notification
 } from './lib';
 import { 
   ServiceDisruption,
@@ -15,14 +16,42 @@ import {
 } from './models';
 
 const REDIRECT_URL = 'http://uoit.ca/emergency';
+// const NOTIFY_DURATION = 3000;
 
 const dom = new DomBuddy();
 const rss = new RSSUtility();
+const toast = new Notification();
 const client = new SocketPollClient();
 
 rss.onTakeover(() => {
   console.info('[rss-utility] takeover occurred');
-  rss.notifyUser('Taking over!', null, 'alert', () => alert('taken over!'));
+  toast.notify(`<span class="icon_emergency alert text-larger"></span> <strong>Notice:</strong> You are about to be redirected to an emergency message!<br/><small>Redirecting in:</small> <strong class="countdown"></strong>`, {
+    duration: 5000,
+    className: 'alert',
+    position: {
+      // left: true,
+      right: true,
+      // top: true,
+      bottom: true
+    },
+    // disableAnimation: true,
+    onNotify() {
+      let secondsLeft = 5;
+      const countdownEl: Element = [...this.childNodes].find((el: Element) => {
+        return el.classList && el.classList.contains('countdown')
+      });
+      countdownEl.innerHTML = `${secondsLeft} seconds`;
+      const ticker = setInterval(() => {
+        if (secondsLeft > 0) {
+          secondsLeft--;
+          countdownEl.innerHTML = `${secondsLeft} seconds`;
+        } else {
+          countdownEl.innerHTML = '';
+          clearInterval(ticker);
+        }
+      }, 1000)
+    }
+  });
 });
 
 client.on<TYPE_DISRUPTION, RSSFeed>(TYPE_DISRUPTION, ({ data }) => {

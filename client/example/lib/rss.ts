@@ -41,21 +41,6 @@ export class RSSUtility {
     }
   }
 
-  notifyUser(message: string, duration?: number, className?: string, onDurationEnd?: () => void) {
-    const template = document.createElement('template');
-    template.innerHTML = `<div data-closable class="callout alert-callout ${className} notification animated fadeInDown">
-      ${message}
-      <button class="close-button" aria-label="Dismiss alert" type="button" data-close>
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>`;
-    const notification = template.content.firstChild;
-    document.body.appendChild(notification);
-    if (duration) {
-      setTimeout(() => document.body.removeChild(notification) && onDurationEnd(), duration);
-    }
-  }
-
   onTakeover(callback: () => void) {
     this._onTakeover = callback;
   }

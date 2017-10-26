@@ -1,48 +1,27 @@
-$lightblue:		#0077ca; 
-$darkblue: 		#003c71;
-$bluelight:		$lightblue;
-$bluedark:		$darkblue;
-$grey: 				#53565a;
-$greylight:		scale-color($grey, $lightness: 90%);
-$greymedium:	scale-color($grey, $lightness: 75%);
-
-$light-gray: #e6e6e6;
-$medium-gray: #cacaca;
-$dark-gray: #8a8a8a;
-$black: #151515;//#0a0a0a;
-$white: #ffffff; //#fefefe;
-
-$primary-color: $lightblue !default;
-$secondary-color: $grey !default;
-$tertiary-color: $greymedium !default;
-$accent-color: $darkblue !default;
-
-$emergency-color: #A40B0B;
-$success-color: 	#2ED64C;
-$warning-color: 	#FFAE00;
-$alert-color: 		#D00606;
-
-$alert-callout-notification-border-left-width: 5px;
-$alert-callout-notification-radius: 0.6rem;
-$alert-callout-notification-large-font-scale: 150%;
-$alert-callout-notification-small-font-scale: 80%;
-
-body, html, .main {
-  height: 100vh;
-}
+@import './variables.scss';
 
 .alert-callout.notification {
   position: fixed;
-  top: 0;
-  right: 0;
   padding-right: 3rem;
-  margin-top: 1rem;
-  margin-right: 1rem;
+  margin: 1rem;
   background: $light-gray;
   color: $dark-gray;
   border: 0;
   border-left: $alert-callout-notification-border-left-width solid $dark-gray;
   box-shadow: 0 5px 8px -6px rgba(0,0,0, 0.2);
+  
+  &.notification-left {
+    left: 0;
+  }
+  &.notification-top {
+    top: 0;
+  }
+  &.notification-right {
+    right: 0;
+  }
+  &.notification-bottom {
+    bottom: 0;
+  }
 
   &.success {
     background: $light-gray;
