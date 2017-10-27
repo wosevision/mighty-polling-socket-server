@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.1.0] - 2017-10-27
 ### Added
 - New configuration options that enable:
   - a default interval to be set
@@ -13,6 +15,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - options for passing to `ws`
   - options to set for every HTTP request
 - Source configuration property `options` for passing HTTP options to different poll types
+- Client side examples and the beginnings of a library:
+  - library source under `client/lib`
+  - includes _**.d.ts**_ type definitions under `client/lib/types` for:
+    - `xml2js`-style objects (JS from XML) + helpers for extending
+    - RSS2.0 feeds parsed with `xml2js`, made with provided XML helpers
+    - RSS extras as examples of how to further extend types with provided helpers
+  - example client source under `client/example`
+  - includes examples of how to build classes that listen to polling socket server (uses XML examples in `server/example/xml)
 
 ## [1.0.1] - 2017-10-25
 ### Changed
