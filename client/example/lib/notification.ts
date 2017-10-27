@@ -17,64 +17,73 @@ export type NotificationOptions = Partial<{
 
 export class Notification {
   private _options: NotificationOptions;
+  private _notification: Element;
+
+  constructor(private _defaults: NotificationOptions = {}) { }
 
   notify(message: string, options: NotificationOptions = {}) {
-    this._options = options;
-    const notification = this._transitionIn(message);
-    if (options.duration) {
+    this._options = {...this._defaults, ...options};
+    this._notification = this._getNotification(message);
+    this._transitionIn();
+    if (this._options.duration) {
       setTimeout(() => {
-        this._transitionOut(notification);
-      }, options.duration);
+        this._transitionOut();
+      }, this._options.duration);
     }
     return this;
   }
 
   dismiss() {
-
+    this._transitionOut();
   }
 
-  private _transitionIn(message) {
-    const notificationClasses = this._getNotificationClasses(this._options);
-    if (!this._options.disableAnimation) {
-      notificationClasses.push('animated', 'fadeInDown');
-    }
+  private _getNotification(message: string) {
+    const notificationClasses = this._getNotificationClasses();
     const template = document.createElement('template');
-    template.innerHTML = `<div data-closable class="callout alert-callout ${notificationClasses.join(' ')}">
+    template.innerHTML = `<div data-closable class="callout alert-callout ${notificationClasses}">
       ${message}
       <button class="close-button" aria-label="Dismiss alert" type="button" data-close>
-        <span aria-hidden="true">&times;</span>
+        <span aria-hidden="true">⊗</span>
       </button>
     </div>`;
-    const notification = template.content.firstChild;
-    document.body.appendChild(notification);
-    this._options.onNotify && this._options.onNotify.apply(notification);
-    return notification;
+    return template.content.firstChild as Element;
   }
 
-  private _transitionOut(notification) {
+  private _transitionIn() {
     if (this._options.disableAnimation) {
-      document.body.removeChild(notification);
-      this._options.onDismiss && this._options.onDismiss.apply(notification);
+      document.body.appendChild(this._notification);
+      this._options.onNotify && this._options.onNotify.apply(this._notification);
     } else {
-      notification.classList.remove('fadeInDown');
-      notification.classList.add('fadeOutUp');
+      this._notification.classList.remove('fadeOutUp');
+      this._notification.classList.add('fadeInDown');
+      document.body.appendChild(this._notification);
       setTimeout(() => {
-        document.body.removeChild(notification);
-        this._options.onDismiss && this._options.onDismiss.apply(notification);
+        this._options.onNotify && this._options.onNotify.apply(this._notification);
       }, 1000);
     }
   }
 
-  private _getNotificationClasses(options) {
+  private _transitionOut() {
+    if (this._options.disableAnimation) {
+      document.body.removeChild(this._notification);
+      this._options.onDismiss && this._options.onDismiss.apply(this._notification);
+    } else {
+      this._notification.classList.remove('fadeInDown');
+      this._notification.classList.add('fadeOutUp');
+      setTimeout(() => {
+        document.body.removeChild(this._notification);
+        this._options.onDismiss && this._options.onDismiss.apply(this._notification);
+      }, 1000);
+    }
+  }
+
+  private _getNotificationClasses() {
     const notificationClasses = ['notification'];
-    if (options.position) {
-      Object.keys(options.position).forEach(key => {
-          options.position[key] && notificationClasses.push(`notification-${key}`);
-      });
-    }
-    if (options.className) {
-      notificationClasses.push(options.className)
-    }
-    return notificationClasses;
+    this._options.position && Object.keys(this._options.position).forEach(key => {
+      this._options.position[key] && notificationClasses.push(`notification-${key}`);
+    });
+    this._options.className && notificationClasses.push(this._options.className);
+    !this._options.disableAnimation && notificationClasses.push('animated');
+    return notificationClasses.join(' ');
   }
 }
