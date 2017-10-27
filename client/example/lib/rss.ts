@@ -13,10 +13,6 @@ const COOKIE_NAME = 'last-viewed-pubdate';
  * @class RSSUtility
  */
 export class RSSUtility {
-
-  /** Holds callback for first views if registered */
-  private _onFirstView: (data?: RSSFeed) => void;
-  
   /**
    * Shortcut for pulling `<item>` objects out of an RSS feed.
    * Receives an optional transform function that is applied
@@ -44,13 +40,13 @@ export class RSSUtility {
   /**
    * Optionally check the publish date of an incoming RSS data object
    * against a cookie set to the publish date of the last viewed data.
-   * If the dates do not match, stores the new date in the cookie and
-   * calls a registered `onFirstView` callback.
+   * If the dates do not match, stores the new date in the cookie. Returns
+   * true if viewed already, false if not.
    * 
-   * @param {RSSFeed} data 
+   * @param {RSSFeed} data
    * @memberof RSSUtility
    */
-  trackLastViewed(data: RSSFeed) {
+  checkViewStatus(data: RSSFeed) {
     let cookieDate;
     try {
       const pubDate = (data.rss.channel[0].pubDate || data.rss.channel[0].item[0].pubDate)[0];
@@ -60,22 +56,12 @@ export class RSSUtility {
       return;
     }
     const lastViewedPubDate = this._getCookie(COOKIE_NAME);
-    console.log(cookieDate, lastViewedPubDate)
     if (cookieDate !== lastViewedPubDate) {
       this._setCookie(COOKIE_NAME, cookieDate);
-      this._onFirstView(data);
+      return false;
+    } else {
+      return true;
     }
-  }
-
-  /**
-   * Registers a callback to be called when incoming RSS data
-   * has a publish date that does not match the cookie date.
-   * 
-   * @param {(data?) => void} callback 
-   * @memberof RSSUtility
-   */
-  onFirstView(callback: (data?) => void) {
-    this._onFirstView = callback;
   }
 
   /**
