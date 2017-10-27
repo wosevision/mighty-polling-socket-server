@@ -14,7 +14,6 @@
   <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
   <% } %>
   <link href="https://shared.uoit.ca/global-2.1/dist/css/uoit.css" rel="stylesheet">
-  <script src="https://shared.uoit.ca/global-2.1/dist/js/jquery.min.js" type="text/javascript"></script>
 </head>
 <body>
 <% if (htmlWebpackPlugin.options.window) { %>
@@ -34,8 +33,6 @@
   </div> -->
 </section>
 
-<script src="https://shared.uoit.ca/global-2.1/dist/js/global.js" type="text/javascript"></script>
-<script src="https://shared.uoit.ca/global-2.1/dist/js/uoit.js" type="text/javascript"></script>
 <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
 <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
 <% } %>
