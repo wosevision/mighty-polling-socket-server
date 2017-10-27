@@ -17,7 +17,11 @@
       "removeComments": false,
       "preserveConstEnums": true,
       "sourceMap": true,
-      "skipLibCheck": true
+      "skipLibCheck": true,
+      "typeRoots": [
+        "client/types",
+        "client/lib/types"
+      ]
   },
   "resolve": {
     "extensions": [ ".ts", ".tsx", ".js", ".json"]

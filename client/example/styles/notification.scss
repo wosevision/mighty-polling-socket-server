@@ -1,0 +1,74 @@
+@import './variables.scss';
+
+.alert-callout.notification {
+  position: fixed;
+  padding-right: 3rem;
+  margin: 1rem;
+  background: $light-gray;
+  color: $dark-gray;
+  border: 0;
+  border-left: $alert-callout-notification-border-left-width solid $dark-gray;
+  box-shadow: 0 5px 8px -6px rgba(0,0,0, 0.2);
+  
+  &.notification-left {
+    left: 0;
+  }
+  &.notification-top {
+    top: 0;
+  }
+  &.notification-right {
+    right: 0;
+  }
+  &.notification-bottom {
+    bottom: 0;
+  }
+
+  &.success {
+    background: $light-gray;
+    color: $dark-gray;
+    border-left: $alert-callout-notification-border-left-width solid $success-color;
+  }
+
+  &.alert {
+    background: $light-gray;
+    color: $dark-gray;
+    border-left: $alert-callout-notification-border-left-width solid $alert-color;
+  }
+
+  &.warning {
+    background: $light-gray;
+    color: $dark-gray;
+    border-left: $alert-callout-notification-border-left-width solid $warning-color;
+  }
+
+  &.primary {
+    background: $light-gray;
+    color: $dark-gray;
+    border-left: $alert-callout-notification-border-left-width solid $primary-color;
+  }
+
+  &.small {
+
+    font-size: $alert-callout-notification-small-font-scale;
+
+    .close-button {
+      font-size: 1.5rem;
+    }
+  }
+
+  &.large {
+    font-size: $alert-callout-notification-large-font-scale;
+
+    .close-button {
+      font-size: 3rem;
+    }
+  }
+
+  .close-button {
+    font-size: 2rem;
+  }
+
+  &.radius {
+    border-radius: $alert-callout-notification-radius;
+  }
+}

@@ -23,11 +23,13 @@ const babelOptions = {
 }
 
 module.exports = removeEmpty({
-  entry: './client/index.ts',
+  entry: ifProduction('./client/lib/index.ts', './client/example/index.ts'),
 
   output: {
-    filename: ifProduction('[name]-bundle-[hash].js', '[name]-bundle.js'),
-    path: path.resolve(__dirname, 'public'),
+    filename: ifProduction('mighty-socket-client.min.js', '[name]-[hash].js'),
+    library:  ifProduction('MightySocketClient'),
+    libraryTarget:  ifProduction('umd'),
+    path: ifProduction(path.resolve(__dirname, 'dist'), path.resolve(__dirname, 'public')),
   },
 
   module: {
@@ -93,13 +95,15 @@ module.exports = removeEmpty({
       },
     }),
 
-    new HtmlWebpackPlugin({
-      hash: true,
-      filename: 'index.html',
-      template: './client/index.ejs',
-      inject: false,
-      environment: nodeEnv,
-    }),
+    ifDevelopment(
+      new HtmlWebpackPlugin({
+        hash: true,
+        filename: 'index.html',
+        template: './client/example/index.ejs',
+        inject: false,
+        environment: nodeEnv,
+      })
+    ),
 
     // ifProduction(new CopyWebpackPlugin([{ from: 'assets', to: 'assets' }])),
 
