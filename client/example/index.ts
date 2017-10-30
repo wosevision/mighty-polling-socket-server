@@ -20,6 +20,11 @@ const rss = new RSSUtility();
 const toast = new Notification();
 const client = new SocketPollClient();
 
+/**
+ * A bind-ready function for running a 5-second countdown
+ * inside the notification displayed before emergency message
+ * redirects, to notify of impending redirection.
+ */
 const onNotify = function startCountdown() {
   let secondsLeft = 5, countdownDone = false;
   const elements: Element[] = [...this.childNodes];
@@ -33,6 +38,9 @@ const onNotify = function startCountdown() {
   }, 1000)
 };
 
+/**
+ * Performs a redirect after notification has been dismissed.
+ */
 const onDismiss = () => document.location.assign(REDIRECT_URL);
 
 /**
