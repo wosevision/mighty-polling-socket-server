@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.1.1] - 2017-10-30
+### Changed
+- `RSS.Extras` type definitions changed to live under to `RSSExtras` module
+
+### Fixed
+- Export of bundled utility types (XML, RSS, etc) for TS consumers fixed
+- Fixed import confusion between client/server libraries with `package.json` fields for `main` (server) and `module` (client)
+
+### Added
+- Better JSdocs/TSdocs for IDEs
+
 ## [1.1.0] - 2017-10-27
 ### Added
 - New configuration options that enable:

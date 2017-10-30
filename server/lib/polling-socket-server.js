@@ -155,7 +155,9 @@ class PollingSocketServer {
    * @memberof PollingSocketServer
    */
   broadcast(port = 8080) {
-    this.app.listen(port);
+    return Observable.bindNodeCallback(this.app.listen)(port)
+      .catch(err => console.log(`[error] ${err}`))
+      .subscribe(() => console.log(`[server] listening on port ${port}`));
   }
 
   /**
