@@ -1,8 +1,10 @@
+import { RSS, RSSExtras } from '../lib';
+
 const item: RSS.Item = {
   title: ['']
 };
 
-const media: RSS.Extras.Media  = {
+const media: RSSExtras.Media  = {
   'media:content': [{
       $: {
         description: '',
@@ -12,7 +14,7 @@ const media: RSS.Extras.Media  = {
   }]
 };
 
-const itemWithMedia: RSS.Extras.ItemWithMedia = {
+const itemWithMedia: RSSExtras.ItemWithMedia = {
   title: [''],
   ...media
 };

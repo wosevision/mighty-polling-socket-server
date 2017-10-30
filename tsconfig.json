@@ -1,8 +1,8 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-      "allowJs": true,
       "allowSyntheticDefaultImports": true,
+      "declaration": true,
       "lib": [
           "dom",
           "dom.iterable",
@@ -25,5 +25,9 @@
   },
   "resolve": {
     "extensions": [ ".ts", ".tsx", ".js", ".json"]
-  }
+  },
+  "exclude": [
+    "dist",
+    "client/example"
+  ]
 }

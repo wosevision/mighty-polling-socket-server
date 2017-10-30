@@ -1,3 +1,5 @@
+import { RSS } from '../../lib';
+
 import { MessageBase } from '.';
 
 export const TYPE_EMERGENCY = 'emergency';

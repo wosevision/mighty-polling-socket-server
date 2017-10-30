@@ -1,3 +1,5 @@
+import { XML, RSSExtras } from '../../lib';
+
 import { MessageBase } from '.';
 
 export const TYPE_DISRUPTION = 'disruption';
@@ -7,7 +9,7 @@ export type ServiceDisruptionRSSItemContent = {
   summary: string;
   article: string;
 }
-export type ServiceDisruptionRSSItem = RSS.Extras.ItemWithMedia & XML.WithContent<ServiceDisruptionRSSItemContent>
+export type ServiceDisruptionRSSItem = RSSExtras.ItemWithMedia & XML.WithContent<ServiceDisruptionRSSItemContent>
 
 export class ServiceDisruption extends MessageBase {
   title: string;

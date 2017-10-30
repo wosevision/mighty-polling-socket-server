@@ -1,17 +1,18 @@
+import { XML } from './xml'
 /**
  * RSS2.0 type definitions as cited in https://cyber.harvard.edu/rss/rss.html
  */
-declare module RSS {
+export module RSS {
   /**
    * Category
    */
-  type CategoryMetadata = { domain?: string };
+  export type CategoryMetadata = { domain?: string };
   export type Category = XML.TextWithMetadata<string, CategoryMetadata>;
 
   /**
    * Enclosure
    */
-  type EnclosureMetadata = {
+  export type EnclosureMetadata = {
     url: string;
     length: string;
     type: string;
@@ -21,19 +22,19 @@ declare module RSS {
   /**
    * Guid
    */
-  type GuidMetadata = { isPermaLink?: string };
+  export type GuidMetadata = { isPermaLink?: string };
   export type Guid = XML.TextWithMetadata<string, GuidMetadata>;
 
   /**
    * Source
    */
-  type SourceMetadata = { url: string };
+  export type SourceMetadata = { url: string };
   export type Source = XML.TextWithMetadata<string, SourceMetadata>;
   
   /**
    * Item
    */
-  type ItemContent = {
+  export type ItemContent = {
     title: string;
     link?: string;
     description?: string;
@@ -50,7 +51,7 @@ declare module RSS {
   /**
    * Image
    */
-  type ImageContent = {
+  export type ImageContent = {
     url: string;
     title: string;
     link: string;
@@ -63,7 +64,7 @@ declare module RSS {
   /**
    * Cloud
    */
-  type CloudMetadata = {
+  export type CloudMetadata = {
     domain: string;
     port: string;
     path: string;
@@ -75,7 +76,7 @@ declare module RSS {
   /**
    * TextInput
    */
-  type TextInputContent = {
+  export type TextInputContent = {
     title: string;
     description: string;
     name: string;
@@ -86,7 +87,7 @@ declare module RSS {
   /**
    * Channel
    */
-  type ChannelContent = {
+  export type ChannelContent = {
     title: string;
     link: string;
     description: string;
@@ -113,10 +114,10 @@ declare module RSS {
   /**
    * Feed
    */
-  type FeedMetadata = {
+  export type FeedMetadata = {
     version: string;
   };
-  type FeedContent = {
+  export type FeedContent = {
     channel: Channel
   };
   export type Feed = XML.ContentWithMetadata<FeedContent, FeedMetadata>;

@@ -43,7 +43,7 @@
  *   moreContent: ['things']
  * }
  */
-declare module XML {
+export module XML {
   /**
    * Add metadata to node under `$` property.
    */
@@ -66,11 +66,11 @@ declare module XML {
   /**
    * Join text and metadata into single node
    */
-  export type TextWithMetadata<T, M> = WithText<T> & WithMetadata<M>;
+  export type TextWithMetadata<T extends string, M> = WithText<T> & WithMetadata<M>;
   /**
    * Join text and content into single node
    */
-  export type TextWithContent<T, C> = WithText<T> & WithContent<C>;
+  export type TextWithContent<T extends string, C> = WithText<T> & WithContent<C>;
   /**
    * Join content and metadata into single node.
    */
@@ -78,5 +78,5 @@ declare module XML {
   /**
    * Join content, text and metadata into single node.
    */
-  export type TextWithContentAndMetadata<T, C, M> = WithText<T> & WithContent<C> & WithMetadata<M>;
+  export type TextWithContentAndMetadata<T extends string, C, M> = WithText<T> & WithContent<C> & WithMetadata<M>;
 }

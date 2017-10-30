@@ -18,7 +18,7 @@
   "repository": "wosevision/mighty-polling-socket-server",
   "main": "server/lib/polling-socket-server.js",
   "module": "dist/mighty-socket-client.min.js",
-  "types": "dist/mighty-socket-client.d.ts",
+  "types": "dist/client/lib",
   "dependencies": {
     "express": "~4.14.0",
     "express-ws": "^3.0.0",
