@@ -6,14 +6,13 @@
 <!--[if (gt IE 9)|!(IE)]><!--> <html lang="en" class="" <% if(htmlWebpackPlugin.files.manifest) { %> manifest="<%= htmlWebpackPlugin.files.manifest %>"<% } %>> <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>UOIT Emergency Feed</title>
+  <title>Mighty Polling Socket Server</title>
   <% if (htmlWebpackPlugin.options.mobile) { %>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <% } %>
   <% for (var css in htmlWebpackPlugin.files.css) { %>
   <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
   <% } %>
-  <link href="https://shared.uoit.ca/global-2.1/dist/css/uoit.css" rel="stylesheet">
 </head>
 <body>
 <% if (htmlWebpackPlugin.options.window) { %>
@@ -24,13 +23,7 @@
 </script>
 <% } %>
 
-<section class="main row flex-container align-middle align-center">
-  <div class="column text-center" id="disruptions">
-  </div>
-  <div class="column text-center" id="messages">
-  </div>
-  <!-- <div class="column text-center" id="alerts">
-  </div> -->
+<section id="rss-example">
 </section>
 
 <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
