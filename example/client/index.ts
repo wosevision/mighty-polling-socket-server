@@ -6,7 +6,7 @@ import {
 } from './rss-utility';
 import {
   RSSExampleModel,
-  RSS_EXAMPLE
+  TYPE_RSS
 } from './rss-example';
 
 const rss = new RSSUtility();
@@ -17,7 +17,7 @@ const client = new SocketPollClient();
  * mapping `ServiceDisruptionRSSItem` objects to more useful `ServiceDisruption`
  * instances, and building a templated list from the items (if any).
  */
-client.on<RSS_EXAMPLE, RSSFeed>(RSS_EXAMPLE, ({ data }) => {
+client.on<TYPE_RSS, RSSFeed>(TYPE_RSS, ({ data }) => {
   const rssItems = rss.parseItems(data, item => new RSSExampleModel(item));
 
   if (rssItems.length) {

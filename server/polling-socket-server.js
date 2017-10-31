@@ -295,10 +295,11 @@ class PollingSocketServer {
      * to receive incoming data that has been marked as new, as
      * well as the last emitted data that was marked as new.
      */
-    const feed = this._observables[type].subscribe(data => {
-      const message = JSON.stringify({ type, data });
-      client.send(message);
-    });
+    const feed = this._observables[type]
+      .subscribe(data => {
+        const message = JSON.stringify({ type, data });
+        client.send(message);
+      });
   
     /**
      * Subscribes to the active socket connection's `close` event
