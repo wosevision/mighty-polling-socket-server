@@ -14,11 +14,11 @@
     "service",
     "microservice"
   ],
-  "version": "1.1.1",
+  "version": "1.1.2",
   "repository": "wosevision/mighty-polling-socket-server",
-  "main": "server/lib/polling-socket-server.js",
-  "module": "dist/mighty-socket-client.min.js",
-  "types": "dist/client/lib",
+  "main": "server/polling-socket-server.js",
+  "module": "client",
+  "types": "dist/client",
   "dependencies": {
     "express": "~4.14.0",
     "express-ws": "^3.0.0",
@@ -30,10 +30,9 @@
     "node": "8.5.0"
   },
   "scripts": {
-    "build": "shx rm -rf public/** && NODE_ENV=production webpack -p --progress",
-    "start": "npm run dev-server & webpack-dev-server",
-    "dev-server": "nodemon server/example --harmony",
-    "server": "node server/example --harmony"
+    "build": "shx rm -rf dist/** && NODE_ENV=production webpack -p --progress",
+    "test-client": "npm run test-server & webpack-dev-server",
+    "test-server": "nodemon example/server --harmony"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

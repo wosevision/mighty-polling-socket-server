@@ -23,7 +23,7 @@ const babelOptions = {
 }
 
 module.exports = removeEmpty({
-  entry: ifProduction('./client/lib/index.ts', './client/example/index.ts'),
+  entry: ifProduction('./client/index.ts', './example/client/index.ts'),
 
   output: {
     filename: ifProduction('mighty-socket-client.min.js', '[name]-[hash].js'),
@@ -99,7 +99,7 @@ module.exports = removeEmpty({
       new HtmlWebpackPlugin({
         hash: true,
         filename: 'index.html',
-        template: './client/example/index.ejs',
+        template: './example/client/index.ejs',
         inject: false,
         environment: nodeEnv,
       })

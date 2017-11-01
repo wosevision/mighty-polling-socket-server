@@ -19,8 +19,7 @@
       "sourceMap": true,
       "skipLibCheck": true,
       "typeRoots": [
-        "client/types",
-        "client/lib/types"
+        "client/types"
       ]
   },
   "resolve": {
@@ -28,6 +27,6 @@
   },
   "exclude": [
     "dist",
-    "client/example"
+    "example/client"
   ]
 }

@@ -1,4 +1,4 @@
-import { RSS } from '../../lib';
+import { RSS } from '../../client';
 
 /** Container type for `xml2js` RSS feeds */
 export type RSSFeed = { rss: RSS.Feed };
