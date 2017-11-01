@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - New `stats` configuration option that sets up routes for watching socket server metrics, i.e. for dashboards or monitoring
 
+## [1.1.4] - 2017-11-1
+### Fixed
+- Sorted out separation of built files for client library consumers:
+  - Bundled files under `_bundles`
+  - Compiled ES5 modules using `require()` inside `dist`
+  - Compiled ES6 modules using `import *` inside `dist-esm`
+  - Original TS files kept in `client`
+  - Server files left as package.json `main` field to leave server untouched
+
 ## [1.1.3] - 2017-10-31
 ### Fixed
 - Autodetection of secure websocket endpoints (`wss://`) when client library connects from HTTPS
