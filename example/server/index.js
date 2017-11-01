@@ -22,7 +22,8 @@ const SOURCE_LIST = [
  */
 const pss = new PollingSocketServer({
   defaultInterval: 2000,
-  checkHeartbeat: true
+  checkHeartbeat: true,
+  stats: true
 });
 
 /**

@@ -10,6 +10,8 @@ const expressWs = require('express-ws');
 const { Observable, BehaviorSubject } = require('./rxjs');
 const { RxHttpRequest } = require('rx-http-request');
 
+const { SocketMonitor } = require('./socket-monitor');
+
 /**
  * Core class for instantiating a new server.
  * 
@@ -27,12 +29,13 @@ class PollingSocketServer {
     checkHeartbeat = false,
     expressApp = express(),
     requestOptions,
-    wsOptions
+    wsOptions,
+    stats = false
   } = {}) {
     /**
      * Save some options to parameter map.
      */
-    this._params = { defaultInterval, requestOptions };
+    this._params = { defaultInterval, requestOptions, stats };
     /**
      * Creates an `express` app, mounts the express app
      * onto an `express-ws` instance, and saves a reference
@@ -155,6 +158,10 @@ class PollingSocketServer {
    * @memberof PollingSocketServer
    */
   broadcast(port = 8080) {
+    if (this._params.stats) {
+      this._statMonitor = new SocketMonitor(this);
+    }
+
     return Observable.bindNodeCallback(this.app.listen)(port)
       .catch(err => console.log(`[error] ${err}`))
       .subscribe(() => console.log(`[server] listening on port ${port}`));
