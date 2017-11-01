@@ -58,7 +58,4 @@ typings/
 .env
 
 # built files
-_bundles
-dist-esm
-dist
 public
