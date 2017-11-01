@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - New `stats` configuration option that sets up routes for watching socket server metrics, i.e. for dashboards or monitoring
 
+## [1.1.3] - 2017-10-31
+### Fixed
+- Autodetection of secure websocket endpoints (`wss://`) when client library connects from HTTPS
+
 ## [1.1.2] - 2017-10-31
 ### Changed
 - Example material reworked to be more generic:

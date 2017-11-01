@@ -1,7 +1,7 @@
 import { RSS } from '../../client';
 
-export const RSS_EXAMPLE = 'rss-example';
-export type RSS_EXAMPLE = typeof RSS_EXAMPLE;
+export const TYPE_RSS = 'rss-example';
+export type TYPE_RSS = typeof TYPE_RSS;
 
 export class RSSExampleModel {
 
