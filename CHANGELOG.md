@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - New `stats` configuration option that sets up routes for watching socket server metrics, i.e. for dashboards or monitoring
 
-## [1.1.4] - 2017-11-1
+## [1.1.4 - 1.1.6] - 2017-11-1
+
+**Botched publish caused version jumps**
+
 ### Fixed
 - Sorted out separation of built files for client library consumers:
   - Bundled files under `_bundles`
