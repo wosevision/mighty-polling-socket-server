@@ -9,8 +9,9 @@ export class SocketConnection {
   private connection: WebSocket;
   constructor(url?: string, endpoint?: string) {
     if (!url) {
-      url = `ws://${ window.document.location.host.replace(/:.*/, '') }:8080`; //dev
-      // url = `wss://${ window.document.location.host.replace(/:.*/, '') }`; //live
+      const { location } = document;
+      const { host, protocol, port } = location;
+      url = `${protocol.replace(/http/, 'ws')}//${ host.replace(/:.*/, '') }${ port ? ':8080' : '' }`;
     }
     url = `${url}/${endpoint || ''}`;
     this.connection = new WebSocket(url);
