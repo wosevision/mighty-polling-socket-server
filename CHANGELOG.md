@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- New `stats` configuration option that sets up routes for watching socket server metrics, i.e. for dashboards or monitoring
+
+## [1.1.2] - 2017-10-31
+### Changed
+- Example material reworked to be more generic:
+  - no longer contains implementation details specific to the project that spurred the creation of this library
+  - single basic RSS example with server and client
+  - includes webpack dev server npm script for local testing
+- No changes to library itself / patch release
 
 ## [1.1.1] - 2017-10-30
 ### Changed
