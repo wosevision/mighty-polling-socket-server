@@ -9,11 +9,12 @@
           "es2015",
           "es2016"
       ],
-      "target": "es2016",
-      "module": "es2015",
+      "target": "es5",
+      "module": "commonjs",
       "moduleResolution": "node",
       "noUnusedLocals": true,
       "noUnusedParameters": true,
+      "outDir": "dist",
       "removeComments": false,
       "preserveConstEnums": true,
       "sourceMap": true,
@@ -25,8 +26,7 @@
   "resolve": {
     "extensions": [ ".ts", ".tsx", ".js", ".json"]
   },
-  "exclude": [
-    "dist",
-    "example/client"
+  "files": [
+    "client/index.ts"
   ]
 }

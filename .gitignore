@@ -57,5 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
-# built testing files
-public/
+# built files
+_bundles
+dist-esm
+dist
+public

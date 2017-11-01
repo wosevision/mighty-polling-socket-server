@@ -8,6 +8,11 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const nodeEnv = process.env.NODE_ENV || 'development';
 const { ifDevelopment, ifProduction } = getIfUtils(nodeEnv);
 
+const PATHS = {
+  entry: path.resolve(__dirname, 'client/index.ts'),
+  bundles: path.resolve(__dirname, '_bundles'),
+};
+
 const babelOptions = {
   presets: [
     [
@@ -23,13 +28,17 @@ const babelOptions = {
 }
 
 module.exports = removeEmpty({
-  entry: ifProduction('./client/index.ts', './example/client/index.ts'),
+  entry: ifProduction({
+    'mighty-socket-client': PATHS.entry,
+    'mighty-socket-client.min': PATHS.entry
+  }, './example/client/index.ts'),
 
   output: {
-    filename: ifProduction('mighty-socket-client.min.js', '[name]-[hash].js'),
+    filename: ifProduction('[name].js', '[name]-[hash].js'),
     library:  ifProduction('MightySocketClient'),
-    libraryTarget:  ifProduction('umd'),
-    path: ifProduction(path.resolve(__dirname, 'dist'), path.resolve(__dirname, 'public')),
+    libraryTarget: ifProduction('umd'),
+    // umdNamedDefine: true,
+    path: ifProduction(PATHS.bundles, path.resolve(__dirname, 'public')),
   },
 
   module: {
@@ -57,7 +66,11 @@ module.exports = removeEmpty({
             options: babelOptions
           },
           {
-            loader: 'ts-loader'
+            loader: 'ts-loader',
+            // exclude: /node_modules/,
+            query: {
+              transpileOnly: true
+            }
           }
         ]
       },
@@ -111,5 +124,13 @@ module.exports = removeEmpty({
       new ExtractTextPlugin('[name]-bundle-[hash].css'),
       new ExtractTextPlugin('[name]-bundle.css')
     ),
+
+    ifProduction(
+      new webpack.optimize.UglifyJsPlugin({
+        minimize: true,
+        sourceMap: true,
+        include: /\.min\.js$/,
+      })
+    )
   ]),
 });

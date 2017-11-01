@@ -16,9 +16,11 @@
   ],
   "version": "1.1.3",
   "repository": "wosevision/mighty-polling-socket-server",
-  "main": "server/polling-socket-server.js",
-  "module": "client",
-  "types": "dist/client",
+  "main": "./server/polling-socket-server.js",
+  "module": "./dist-esm/index",
+  "jsnext:main": "./dist-esm/index.js",
+  "types": "./dist/index",
+  "typings": "./dist/index",
   "dependencies": {
     "express": "~4.14.0",
     "express-ws": "^3.0.0",
@@ -30,9 +32,13 @@
     "node": "8.5.0"
   },
   "scripts": {
-    "build": "shx rm -rf dist/** && NODE_ENV=production webpack -p --progress",
+    "clean": "shx rm -rf _bundles dist dist-esm",
+    "prebuild": "npm run clean",
+    "build": "tsc && tsc -m es6 --outDir dist-esm && NODE_ENV=production webpack -p --progress",
     "test-client": "npm run test-server & webpack-dev-server",
-    "test-server": "nodemon example/server --harmony"
+    "test-server": "nodemon example/server --harmony",
+    "preversion": "npm run build",
+    "postversion": "git push --follow-tags && npm publish"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
