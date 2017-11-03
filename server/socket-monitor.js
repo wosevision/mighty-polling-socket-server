@@ -14,7 +14,7 @@ class SocketMonitor {
       .accumulate();
 
     const {
-      connnection$,
+      connection$,
       interval$,
       paused$,
       app,

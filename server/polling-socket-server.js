@@ -68,14 +68,14 @@ class PollingSocketServer {
      * Tracks all connection events (open and close) in a single
      * observable and reports number of connections.
      */
-    this.connnection$ = this._getConnections();
+    this.connection$ = this._getConnections();
 
     /**
      * A "pauser" observable that emits when a connection is opened
      * or closed; emits true if there are no connections remaining
      * and false if so (if the emission is different from previous).
      */
-    this.paused$ = this.connnection$
+    this.paused$ = this.connection$
       .map(() => this.wss.clients.size === 0)
       .distinctUntilChanged()
       .do(status => console.log(`[interval] ${status ? 'idle' : 'active'}`));
