@@ -37,6 +37,7 @@ class PollingSocketServer {
      * Save some options to parameter map.
      */
     this._params = { defaultInterval, requestOptions, logging, stats };
+
     /**
      * Creates an `express` app, mounts the express app
      * onto an `express-ws` instance, and saves a reference
@@ -223,7 +224,7 @@ class PollingSocketServer {
         this._subjects[type].next(data);
       })
       .catch(error => {
-        this._log('error', error)
+        this._log('error:polling', error)
         return Observable.throw(error);
       })
       .share();
@@ -306,21 +307,32 @@ class PollingSocketServer {
    */
   _openClientPoll(type, client) {
     this._log('app', `connection to /${type} detected`);
+    
     /**
      * Subsribes to an source type's poller to activate it.
      */
-    const polling = this._pollers[type].subscribe();
+    const polling = this._pollers[type].subscribe(); 
+    /**
+     * Binds the callback of the incoming client's `send()` method
+     * to an observable that emits an error if the send fails.
+     */
+    const sendAsObservable = Observable.bindNodeCallback(client.send).bind(client);
 
     /**
      * Subscribes to the source type's observable `BehaviorSubject`
-     * to receive incoming data that has been marked as new, as
-     * well as the last emitted data that was marked as new.
+     * to receive incoming data that has been marked as new and the
+     * last emitted data that was marked as new. Formats a message
+     * for the client and sends it using the bound `sendAsObservable`.
      */
     const feed = this._observables[type]
-      .subscribe(data => {
-        const message = JSON.stringify({ type, data });
-        client.send(message);
-      });
+      .map(data => JSON.stringify({ type, data }))
+      .do(message => this._log('sending', message))
+      .flatMap(message => sendAsObservable(message))
+      .catch(error => {
+        this._log('error:sending', error)
+        return Observable.throw(error);
+      })
+      .subscribe(() => this._log('sending', 'send success'));
   
     /**
      * Subscribes to the active socket connection's `close` event
@@ -331,7 +343,7 @@ class PollingSocketServer {
       polling.unsubscribe();
       feed.unsubscribe();
       closed.unsubscribe();
-    })
+    });
   }
 
   /**
