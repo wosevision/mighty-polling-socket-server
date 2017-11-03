@@ -8,8 +8,8 @@ const { Observable, BehaviorSubject } = require('./rxjs');
 class SocketMonitor {
   constructor(server) {
 
-    this._statsSubject = new BehaviorSubject({});
-    this.stats$ = this._statsSubject
+    this._stats = new BehaviorSubject({});
+    this.stats$ = this._stats
       .asObservable()
       .accumulate();
 
@@ -21,26 +21,25 @@ class SocketMonitor {
       wss
     } = server;
 
-    this._stats = [
-      connnection$
-        .map(() => ({ pool: wss.clients.size })),
-      Observable.pairs(interval$)
-        .map(([key, value]) => ({ [key]: value })),
-      paused$.map(idle => ({ idle }))
-    ];
+    const clientStats$ = this.getClientStats(connection$);
 
-    this._stats.forEach(stat => {
-      stat.do(value => this._statsSubject.next(value)).subscribe();
-    });
+    const intervalStats$ = this.getIntervalStats(interval$);
+
+    const allStats$ = Observable.merge(clientStats$, intervalStats$)
+      .do(stat => this._stats.next(stat));
     
     server.app.ws(`/stats`, client => {
       console.log(`[app] connection to /stats detected`);
+      const monitoring = allStats$.subscribe();
 
       const stats = this.stats$
-        .subscribe(data => {
-          const message = JSON.stringify({ type: 'stats', data });
-          client.send(message);
-        });
+        .map(data => JSON.stringify({ type: 'stats', data }))
+        .flatMap(message => Observable.fromSocketSend(client, message))
+        .catch(error => {
+          this._log('error:sending', error)
+          return Observable.throw(error);
+        })
+        .subscribe();
 
       /**
        * Subscribes to the active socket connection's `close` event
@@ -48,10 +47,34 @@ class SocketMonitor {
        * by the connection (including itself).
        */
       const closed = Observable.fromEvent(client, 'close').subscribe(() => {
+        monitoring.unsubscribe();
         stats.unsubscribe();
         closed.unsubscribe();
       })
     });
+  }
+
+  getClientStats(connection$) {
+    let clientId = 1;
+    return connection$
+      .scan((pool, { upgradeReq } = {}) => {
+        if (upgradeReq) {
+          const { url, connection: { remoteAddress: ipAddress } } = upgradeReq;
+          const client = { [clientId]: { clientId, ipAddress }};
+          pool[url] = pool[url]
+            ? { ...pool[url], ...client }
+            : [client];
+          clientId++;
+        }
+        return pool;
+      }, {});
+  }
+
+  getIntervalStats(interval$) {
+    const mapToTicks = key => interval$[key].map(tick => ({ [key]: tick }));
+    return Observable.merge(
+      ...Object.keys(interval$).map(mapToTicks)
+    ).accumulate();
   }
 }
 
