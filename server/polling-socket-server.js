@@ -8,7 +8,7 @@ const expressWs = require('express-ws');
  * instance methods.
  */
 const { Observable, BehaviorSubject } = require('./rxjs');
-const { RxHttpRequest } = require('rx-http-request');
+const { RxHR } = require('@akanass/rx-http-request');
 
 const { SocketMonitor } = require('./socket-monitor');
 
@@ -213,7 +213,7 @@ class PollingSocketServer {
   }) {
     return this._getInterval(interval)
       .do(() => this._log('polling', `checking: ${type}`))
-      .switchMap(() => RxHttpRequest.get(url, { ...this._params.requestOptions, ...options }))
+      .switchMap(() => RxHR.get(url, { ...this._params.requestOptions, ...options }))
       .do(() => this._log('polling', `checked: ${type}`))
       .map(response => response.body)
       .parseXML(xml)

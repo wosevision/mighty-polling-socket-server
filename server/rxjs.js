@@ -1,7 +1,6 @@
 const { Observable } = require('rxjs/Observable');
 const { BehaviorSubject } = require('rxjs/BehaviorSubject');
 require('rxjs/add/observable/bindNodeCallback');
-require('rxjs/add/observable/fromPromise');
 require('rxjs/add/observable/fromEvent');
 require('rxjs/add/observable/interval');
 require('rxjs/add/observable/throw');
@@ -10,6 +9,7 @@ require('rxjs/add/observable/merge');
 require('rxjs/add/operator/distinctUntilChanged');
 require('rxjs/add/operator/switchMap');
 require('rxjs/add/operator/mergeMap');
+require('rxjs/add/operator/filter');
 require('rxjs/add/operator/share');
 require('rxjs/add/operator/catch');
 require('rxjs/add/operator/mapTo');
