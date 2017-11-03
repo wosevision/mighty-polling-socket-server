@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 - New `stats` configuration option that sets up routes for watching socket server metrics, i.e. for dashboards or monitoring
+- Fixes to shared subscriptions, duplicated logs
+- More configurability for server-level logging
+- Critical typo: public property for subscription, `connnection$` (three `n`s), fixed
 
 ## [1.1.4 - 1.1.6] - 2017-11-1
 
