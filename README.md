@@ -15,12 +15,16 @@ Show me the code!
 ```js
 const { PollingSocketServer } = require('mighty-polling-socket-server');
 
+// optionally BYOE: "bring your own Express"!
+const express = require('express');
+const expressApp = express();
+expressApp.use(express.static('/somepath'));
+
 const sources = [{
   type: 'weather',
   url: 'http://someother.api.com/v4/weather.json',
   compare: (oldData, newData) => oldData.time === newData.time,
-  transform: data => `It was ${data.degrees.celsius}°C at ${data.time}`,
-  interval: 1000,
+  transform: data => `It was ${data.degrees.celsius}°C at ${data.time}`
 }, {
   type: 'emergency',
   path: 'emergencies',
@@ -33,7 +37,11 @@ const sources = [{
   xml: true
 }];
 
-const pss = new PollingSocketServer(); // 🔋 new server instance 
+const pss = new PollingSocketServer({
+  defaultInterval: 1000,
+  logging: false,
+  expressApp
+}); // 🔋 new server instance 
 pss.sources(sources); // ⚙️ sources to auto-generate routes
 pss.broadcast(3000); // ⚡️ on port number 3000 
 ```
@@ -70,6 +78,15 @@ Require it.
 const { PollingSocketServer } = require('mighty-polling-socket-server');
 ```
 
+## Examples
+
+**Example material can be found in [`/example`](/example).** This includes basic usage examples for both included libraries:
+
+- **[`/example/server`](/example/server):** a single-source RSS polling server that polls a mock data source found under its `data-examples` directory with a `PollingSocketServer` instance
+- **[`/example/client`](/example/client):** a Typescript example that uses the included `SocketPollClient` class to listen for socket messages from the example server; uses included XML/RSS type definition helpers
+
+All source material is thoroughly documented inline, and the core `PollingSocketServer` class contains many "internal" properties that can be subscribed to, i.e. to perform additional side effects outside those performed by this library (using its intervals/connections/etc).
+
 ## API Reference
 
 ### `PollingSocketServer`
@@ -89,16 +106,19 @@ An optional configuration object for global settings.
 
 ##### options.defaultInterval
 Type: `number`
+Default: `2000`
 
 A global time interval to use if none is supplied to a source.
 
 ##### options.checkHeartbeat
 Type: `boolean`
+Default: `false`
 
 Enable periodic "heartbeat" checks to scan for dropped socket connections.
 
 ##### options.expressApp
-Type: `express.app`
+Type: `Express`
+Default: `express()`
 
 Provide an `express()` app to bring your own routes and configuration.
 
@@ -109,7 +129,26 @@ Default options for supplying to every http request (can be overwritten in sourc
 
 ##### options.wsOptions
 Type: `object`
+
 Options to pass into the WebSocketServer instantiation, i.e. those supported by [ws](https://github.com/websockets/ws/blob/master/doc/ws.md).
+
+##### options.logging
+Type: `boolean`
+Default: `true`
+
+Whether to enable server log messages for polling activity.
+
+##### options.stats
+Type: `boolean`
+Default: `false`
+
+Whether to enable metrics routes. Sets up additional socket routes for monitoring:
+
+- connected clients and their routes
+- intervals and their ticks
+- whether the server is idle
+- last polled data
+- a pipe of the log from `options.logging`
 
 ### `PollingSocketServer.sources(sources)`
 #### sources
