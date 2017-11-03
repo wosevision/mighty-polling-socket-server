@@ -312,11 +312,6 @@ class PollingSocketServer {
      * Subsribes to an source type's poller to activate it.
      */
     const polling = this._pollers[type].subscribe(); 
-    /**
-     * Binds the callback of the incoming client's `send()` method
-     * to an observable that emits an error if the send fails.
-     */
-    const sendAsObservable = Observable.bindNodeCallback(client.send).bind(client);
 
     /**
      * Subscribes to the source type's observable `BehaviorSubject`
@@ -327,7 +322,7 @@ class PollingSocketServer {
     const feed = this._observables[type]
       .map(data => JSON.stringify({ type, data }))
       .do(message => this._log('sending', message))
-      .flatMap(message => sendAsObservable(message))
+      .flatMap(message => Observable.fromSocketSend(client, message))
       .catch(error => {
         this._log('error:sending', error)
         return Observable.throw(error);

@@ -50,4 +50,12 @@ Observable.prototype.parseXML = function(isXML) {
   return isXML ? this.switchMap(data => parseXMLAsObservable(data)) : this;
 }
 
+/**
+ * Binds the callback of the incoming client's `send()` method
+ * to an observable that emits an error if the send fails.
+ */
+Observable.fromSocketSend = function(client, message) {
+  return Observable.bindNodeCallback(client.send).call(client, message);
+}
+
 exports = module.exports = { Observable, BehaviorSubject };
