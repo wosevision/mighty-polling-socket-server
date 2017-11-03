@@ -36,7 +36,7 @@ class PollingSocketServer {
     /**
      * Save some options to parameter map.
      */
-    this._params = { defaultInterval, requestOptions, stats };
+    this._params = { defaultInterval, requestOptions, logging, stats };
     /**
      * Creates an `express` app, mounts the express app
      * onto an `express-ws` instance, and saves a reference
@@ -87,7 +87,8 @@ class PollingSocketServer {
     this.paused$ = this.connection$
       .map(() => this.wss.clients.size === 0)
       .distinctUntilChanged()
-      .do(status => this._log('interval', status ? 'idle' : 'active'));
+      .do(status => this._log('interval', status ? 'idle' : 'active'))
+      .share();
 
     /**
      * Enable periodic checks for dropped connections if enabled.
@@ -96,8 +97,8 @@ class PollingSocketServer {
       this._enableHeartbeatCheck();
     }
     
-    if (logging || stats) {
-      this.logger$.subscribe(log => logging && console.log(log))
+    if (logging) {
+      this.logger$.subscribe(log => logging && console.log(log));
     }
   }
 
@@ -271,8 +272,8 @@ class PollingSocketServer {
      * and shares the connection with all its subscribers.
      */
     this.connectionOpened$ = Observable
-      .fromEvent(this.wss, 'connection')
-      .share();
+      .fromEvent(this.wss, 'connection');
+
     /**
      * Takes an incoming socket connection and maps it to
      * an observable for the closing of that connection.
@@ -287,7 +288,8 @@ class PollingSocketServer {
      */
     return Observable
       .merge(this.connectionOpened$, this.connectionClosed$)
-      .do(state => this._log('websocket', `client ${state ? '' : 'dis'}connected, pool: ${this.wss.clients.size}`));
+      .do(state => this._log('websocket', `client ${state ? '' : 'dis'}connected, pool: ${this.wss.clients.size}`))
+      .share();
   }
   
   /**
