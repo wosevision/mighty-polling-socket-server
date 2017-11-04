@@ -242,22 +242,21 @@ class PollingSocketServer {
    * @returns {Observable<number>}
    * @memberof PollingSocketServer
    */
-  _getInterval(interval) {
-    if (!this.interval$[interval]) {
+  _getInterval(value) {
+    if (!this.interval$[value]) {
       /**
        * If there is no interval already saved in the `interval$` map
        * by this number, initialize it.
        */
-      this.interval$[interval] = Observable.interval(interval)
+      this.interval$[value] = Observable.interval(value)
         .pausable(this.paused$)
-        .do(tick => this._log('interval', `${interval}ms, tick ${tick}`))
+        .do(tick => this._log('interval', `${value}ms, tick ${tick}`))
         .share();
     }
     /**
      * Subscribe to the new or pre-existing interval and return it.
      */
-    this.interval$[interval].subscribe();
-    return this.interval$[interval];
+    return this.interval$[value];
   }
 
   /**
