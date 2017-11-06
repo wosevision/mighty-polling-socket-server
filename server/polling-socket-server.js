@@ -319,6 +319,7 @@ class PollingSocketServer {
      * for the client and sends it using the bound `sendAsObservable`.
      */
     const feed = this._observables[type]
+      .filter(Boolean)
       .map(data => JSON.stringify({ type, data }))
       .do(message => this._log('sending', message))
       .flatMap(message => Observable.fromSocketSend(client, message))
