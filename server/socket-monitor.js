@@ -8,37 +8,43 @@ const { Observable, BehaviorSubject } = require('./rxjs');
 class SocketMonitor {
   constructor(server) {
 
+    const {
+      connection$,
+      interval$,
+      paused$,
+      logger$,
+      app
+    } = server;
+
     this._stats = new BehaviorSubject({});
     this.stats$ = this._stats
       .asObservable()
       .accumulate();
 
-    const {
-      connection$,
-      interval$,
-      paused$,
-      app,
-      wss
-    } = server;
+    const clientStats$ = this.getClientStats(connection$)
+      .map(pool => ({ pool }));
 
-    const clientStats$ = this.getClientStats(connection$);
+    const intervalStats$ = this.getIntervalStats(interval$)
+      .map(intervals => ({ intervals }));
 
-    const intervalStats$ = this.getIntervalStats(interval$);
-
-    const allStats$ = Observable.merge(clientStats$, intervalStats$)
-      .do(stat => this._stats.next(stat));
+    const idleStats$ = paused$.map(idle => ({ idle }));
     
-    server.app.ws(`/stats`, client => {
-      console.log(`[app] connection to /stats detected`);
+    const logStats$ = logger$.map(log => ({ log }))
+
+    const allStats$ = Observable.merge(
+      clientStats$,
+      intervalStats$,
+      idleStats$,
+      logStats$
+    ).do(stat => this._stats.next(stat));
+    
+    app.ws(`/stats`, client => {
       const monitoring = allStats$.subscribe();
 
       const stats = this.stats$
         .map(data => JSON.stringify({ type: 'stats', data }))
         .flatMap(message => Observable.fromSocketSend(client, message))
-        .catch(error => {
-          this._log('error:sending', error)
-          return Observable.throw(error);
-        })
+        .catch(error => Observable.throw(error))
         .subscribe();
 
       /**

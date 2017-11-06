@@ -142,12 +142,11 @@ Whether to enable server log messages for polling activity.
 Type: `boolean`
 Default: `false`
 
-Whether to enable metrics routes. Sets up additional socket routes for monitoring:
+**BETA** Whether to enable metrics routes. Sets up additional socket routes for monitoring:
 
 - connected clients and their routes
 - intervals and their ticks
 - whether the server is idle
-- last polled data
 - a pipe of the log from `options.logging`
 
 ### `PollingSocketServer.sources(sources)`
