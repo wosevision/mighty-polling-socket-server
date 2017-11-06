@@ -349,22 +349,20 @@ class PollingSocketServer {
    * @memberof PollingSocketServer
    */
   _enableHeartbeatCheck() {
-    const heartbeat = function (ev) {
-      this._log('heartbeat', ev);
+    function heartbeat() {
       this.isAlive = true;
-    };
-    this._getInterval(30000)
+    }
+    this._getInterval(10000)
       .do(() => this.wss.clients.forEach(ws => {
         if (ws.isAlive === false) return ws.terminate();
         ws.isAlive = false;
         ws.ping('', false, true);
-      }));
+      })).subscribe();
     this.connectionOpened$
-      .switchMap(ws => {
+      .subscribe(ws => {
         ws.isAlive = true;
-        return Observable.fromEvent(ws, 'pong')
-      })
-      .subscribe(heartbeat);
+        ws.on('pong', heartbeat);
+      });
   }
 
   /**
