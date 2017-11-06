@@ -8,7 +8,9 @@ const expressWs = require('express-ws');
  * instance methods.
  */
 const { Observable, BehaviorSubject } = require('./rxjs');
-const { RxHttpRequest } = require('rx-http-request');
+const { RxHR } = require('@akanass/rx-http-request');
+
+const { SocketMonitor } = require('./socket-monitor');
 
 /**
  * Core class for instantiating a new server.
@@ -27,12 +29,15 @@ class PollingSocketServer {
     checkHeartbeat = false,
     expressApp = express(),
     requestOptions,
-    wsOptions
+    wsOptions,
+    logging = true,
+    stats = false
   } = {}) {
     /**
      * Save some options to parameter map.
      */
-    this._params = { defaultInterval, requestOptions };
+    this._params = { defaultInterval, requestOptions, logging, stats };
+
     /**
      * Creates an `express` app, mounts the express app
      * onto an `express-ws` instance, and saves a reference
@@ -62,20 +67,29 @@ class PollingSocketServer {
     this._pollers = {};
 
     /**
+     * Holds a logging subject and exposes its observable.
+     */
+    this._logger = new BehaviorSubject(null);
+    this.logger$ = this._logger.asObservable()
+      .filter(Boolean)
+      .map(({ source, message }) => `[${source}] ${message}`);
+
+    /**
      * Tracks all connection events (open and close) in a single
      * observable and reports number of connections.
      */
-    this.connnection$ = this._getConnections();
+    this.connection$ = this._getConnections();
 
     /**
      * A "pauser" observable that emits when a connection is opened
      * or closed; emits true if there are no connections remaining
      * and false if so (if the emission is different from previous).
      */
-    this.paused$ = this.connnection$
+    this.paused$ = this.connection$
       .map(() => this.wss.clients.size === 0)
       .distinctUntilChanged()
-      .do(status => console.log(`[interval] ${status ? 'idle' : 'active'}`));
+      .do(status => this._log('interval', status ? 'idle' : 'active'))
+      .share();
 
     /**
      * Enable periodic checks for dropped connections if enabled.
@@ -83,7 +97,10 @@ class PollingSocketServer {
     if (checkHeartbeat) {
       this._enableHeartbeatCheck();
     }
-
+    
+    if (logging) {
+      this.logger$.subscribe(log => logging && console.log(log));
+    }
   }
 
   /**
@@ -155,9 +172,13 @@ class PollingSocketServer {
    * @memberof PollingSocketServer
    */
   broadcast(port = 8080) {
+    if (this._params.stats) {
+      this._statMonitor = new SocketMonitor(this);
+    }
+
     return Observable.bindNodeCallback(this.app.listen)(port)
-      .catch(err => console.log(`[error] ${err}`))
-      .subscribe(() => console.log(`[server] listening on port ${port}`));
+      .catch(error => this._log('error', error))
+      .subscribe(() => this._log('server', `listening on port ${port}`));
   }
 
   /**
@@ -191,19 +212,19 @@ class PollingSocketServer {
     xml = false,
   }) {
     return this._getInterval(interval)
-      .do(data => console.log(`[polling] checking: ${type}`))
-      .switchMap(() => RxHttpRequest.get(url, { ...this._params.requestOptions, ...options }))
-      .do(data => console.log(`[polling] checked: ${type}`))
+      .do(() => this._log('polling', `checking: ${type}`))
+      .switchMap(() => RxHR.get(url, { ...this._params.requestOptions, ...options }))
+      .do(() => this._log('polling', `checked: ${type}`))
       .map(response => response.body)
       .parseXML(xml)
       .distinctUntilChanged(compare)
       .map(transform)
       .do(data => {
-        console.log(`[polling] changed`, data);
+        this._log('polling', `changed: ${type}`)
         this._subjects[type].next(data);
       })
       .catch(error => {
-        console.error(error);
+        this._log('error:polling', error)
         return Observable.throw(error);
       })
       .share();
@@ -221,22 +242,21 @@ class PollingSocketServer {
    * @returns {Observable<number>}
    * @memberof PollingSocketServer
    */
-  _getInterval(interval) {
-    if (!this.interval$[interval]) {
+  _getInterval(value) {
+    if (!this.interval$[value]) {
       /**
        * If there is no interval already saved in the `interval$` map
        * by this number, initialize it.
        */
-      this.interval$[interval] = Observable.interval(interval)
+      this.interval$[value] = Observable.interval(value)
         .pausable(this.paused$)
-        .do(tick => console.log(`[interval] ${interval}ms, tick ${tick}`))
+        .do(tick => this._log('interval', `${value}ms, tick ${tick}`))
         .share();
     }
     /**
      * Subscribe to the new or pre-existing interval and return it.
      */
-    this.interval$[interval].subscribe();
-    return this.interval$[interval];
+    return this.interval$[value];
   }
 
   /**
@@ -252,8 +272,8 @@ class PollingSocketServer {
      * and shares the connection with all its subscribers.
      */
     this.connectionOpened$ = Observable
-      .fromEvent(this.wss, 'connection')
-      .share();
+      .fromEvent(this.wss, 'connection');
+
     /**
      * Takes an incoming socket connection and maps it to
      * an observable for the closing of that connection.
@@ -268,7 +288,8 @@ class PollingSocketServer {
      */
     return Observable
       .merge(this.connectionOpened$, this.connectionClosed$)
-      .do(state => console.log(`[websocket] client ${state ? '' : 'dis'}connected, pool: ${this.wss.clients.size}`));
+      .do(state => this._log('websocket', `client ${state ? '' : 'dis'}connected, pool: ${this.wss.clients.size}`))
+      .share();
   }
   
   /**
@@ -284,22 +305,29 @@ class PollingSocketServer {
    * @memberof PollingSocketServer
    */
   _openClientPoll(type, client) {
-    console.log(`[app] connection to /${type} detected`);
+    this._log('app', `connection to /${type} detected`);
+    
     /**
      * Subsribes to an source type's poller to activate it.
      */
-    const polling = this._pollers[type].subscribe();
+    const polling = this._pollers[type].subscribe(); 
 
     /**
      * Subscribes to the source type's observable `BehaviorSubject`
-     * to receive incoming data that has been marked as new, as
-     * well as the last emitted data that was marked as new.
+     * to receive incoming data that has been marked as new and the
+     * last emitted data that was marked as new. Formats a message
+     * for the client and sends it using the bound `sendAsObservable`.
      */
     const feed = this._observables[type]
-      .subscribe(data => {
-        const message = JSON.stringify({ type, data });
-        client.send(message);
-      });
+      .filter(Boolean)
+      .map(data => JSON.stringify({ type, data }))
+      .do(message => this._log('sending', message))
+      .flatMap(message => Observable.fromSocketSend(client, message))
+      .catch(error => {
+        this._log('error:sending', error)
+        return Observable.throw(error);
+      })
+      .subscribe(() => this._log('sending', 'send success'));
   
     /**
      * Subscribes to the active socket connection's `close` event
@@ -310,7 +338,7 @@ class PollingSocketServer {
       polling.unsubscribe();
       feed.unsubscribe();
       closed.unsubscribe();
-    })
+    });
   }
 
   /**
@@ -322,7 +350,7 @@ class PollingSocketServer {
    */
   _enableHeartbeatCheck() {
     const heartbeat = function (ev) {
-      console.log('[heartbeat]\n', ev);
+      this._log('heartbeat', ev);
       this.isAlive = true;
     };
     this._getInterval(30000)
@@ -337,6 +365,17 @@ class PollingSocketServer {
         return Observable.fromEvent(ws, 'pong')
       })
       .subscribe(heartbeat);
+  }
+
+  /**
+   * Sends a log message to the logger `BehaviorSubject` – the
+   * log is only processed if it is enabled (and subscribed to).
+   * 
+   * @param {string} source
+   * @param {string} message 
+   */
+  _log(source, message) {
+    this._logger.next({ source, message });
   }
 }
 

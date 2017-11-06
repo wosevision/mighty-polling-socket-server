@@ -22,10 +22,10 @@
   "types": "./dist/index",
   "typings": "./dist/index",
   "dependencies": {
+    "@akanass/rx-http-request": "^2.6.0",
     "express": "~4.14.0",
     "express-ws": "^3.0.0",
-    "rx-http-request": "^1.2.0",
-    "rxjs": "^5.4.3",
+    "rxjs": "^5.5.2",
     "xml2js": "^0.4.19"
   },
   "engines": {
@@ -34,7 +34,7 @@
   "scripts": {
     "clean": "shx rm -rf _bundles dist dist-esm",
     "prebuild": "npm run clean",
-    "build": "tsc && tsc -m es6 --outDir dist-esm && NODE_ENV=production webpack -p --progress",
+    "build": "tsc -t es5 -m commonjs && tsc --outDir dist-esm && NODE_ENV=production webpack -p --progress",
     "test-client": "npm run test-server & webpack-dev-server",
     "test-server": "nodemon example/server --harmony",
     "preversion": "npm run build",

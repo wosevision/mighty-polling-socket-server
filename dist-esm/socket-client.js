@@ -16,8 +16,8 @@ import { SocketConnection } from '.';
  * @export
  * @class SocketPollClient
  */
-var SocketPollClient = /** @class */ (function () {
-    function SocketPollClient() {
+export class SocketPollClient {
+    constructor() {
         this._typeCallbacks = {};
     }
     /**
@@ -26,10 +26,10 @@ var SocketPollClient = /** @class */ (function () {
      * @param {(items: T) => void} callback
      * @memberof SocketPollClient
      */
-    SocketPollClient.prototype.on = function (type, callback) {
+    on(type, callback) {
         this._typeCallbacks[type] = callback;
         this.addSocketListener(type);
-    };
+    }
     /**
      * Initializes event listener for socket messages with the
      * pre-initialized socket connection; passes event data from
@@ -41,12 +41,11 @@ var SocketPollClient = /** @class */ (function () {
      * @param {T} type
      * @memberof SocketPollClient
      */
-    SocketPollClient.prototype.addSocketListener = function (type) {
-        var _this = this;
-        var socket = new SocketConnection(null, type);
-        socket.onMessage(function (event) { return _this.onMessage(type, event); });
-        console.log("[socket] added listener for \"" + type + "\"");
-    };
+    addSocketListener(type) {
+        const socket = new SocketConnection(null, type);
+        socket.onMessage(event => this.onMessage(type, event));
+        console.log(`[socket] added listener for "${type}"`);
+    }
     /**
      * Receives a socket's `MessageEvent`; parses the raw string data
      * into a usable object; determines the type of emergency message
@@ -60,12 +59,10 @@ var SocketPollClient = /** @class */ (function () {
      * @param {MessageEvent} event
      * @memberof SocketPollClient
      */
-    SocketPollClient.prototype.onMessage = function (type, event) {
-        var eventData = JSON.parse(event.data);
-        console.log("[socket] " + eventData.type + " message received", eventData);
+    onMessage(type, event) {
+        const eventData = JSON.parse(event.data);
+        console.log(`[socket] ${eventData.type} message received`, eventData);
         this._typeCallbacks[type](eventData);
-    };
-    return SocketPollClient;
-}());
-export { SocketPollClient };
+    }
+}
 //# sourceMappingURL=socket-client.js.map

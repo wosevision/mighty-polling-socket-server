@@ -5,7 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- New `stats` configuration option that sets up routes for watching socket server metrics, i.e. for dashboards or monitoring
+
+## [1.2.0]
+### Added
+- Beta of new `stats` configuration option that sets up routes for watching socket server metrics, i.e. for dashboards or monitoring
+- More configurability for server-level logging
+
+### Fixed
+- Fixes to shared subscriptions, duplicated logs
+- Critical typo: public property for subscription, `connnection$` (three `n`s), fixed
 
 ## [1.1.4 - 1.1.6] - 2017-11-1
 

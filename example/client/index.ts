@@ -33,3 +33,14 @@ client.on<TYPE_RSS, RSSFeed>(TYPE_RSS, ({ data }) => {
     document.getElementById('rss-example').innerHTML = [header, html].join('\n');
   }
 });
+
+const TYPE_STATS = 'stats';
+type TYPE_STATS = typeof TYPE_STATS;
+type Stats = {
+  pool: number;
+  idle: boolean;
+  intervals: any;
+};
+client.on<TYPE_STATS, Stats>('stats', ({ data }) => {
+  console.info('[stats]', data)
+});

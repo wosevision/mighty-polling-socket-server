@@ -1,7 +1,6 @@
 const { Observable } = require('rxjs/Observable');
 const { BehaviorSubject } = require('rxjs/BehaviorSubject');
 require('rxjs/add/observable/bindNodeCallback');
-require('rxjs/add/observable/fromPromise');
 require('rxjs/add/observable/fromEvent');
 require('rxjs/add/observable/interval');
 require('rxjs/add/observable/throw');
@@ -10,9 +9,11 @@ require('rxjs/add/observable/merge');
 require('rxjs/add/operator/distinctUntilChanged');
 require('rxjs/add/operator/switchMap');
 require('rxjs/add/operator/mergeMap');
+require('rxjs/add/operator/filter');
 require('rxjs/add/operator/share');
 require('rxjs/add/operator/catch');
 require('rxjs/add/operator/mapTo');
+require('rxjs/add/operator/scan');
 require('rxjs/add/operator/map');
 require('rxjs/add/operator/do');
 
@@ -21,6 +22,17 @@ require('rxjs/add/operator/do');
  * of the parsed result (using `bindNodeCallback` as factory).
  */
 const parseXMLAsObservable = Observable.bindNodeCallback(require('xml2js').parseString);
+
+/**
+ * Patches the `Observable` prototype to include a method for gathering
+ * emitted objects and merging them as they are received.
+ */
+Observable.prototype.accumulate = function () {
+  return this.scan((combined, latest) => {
+    Object.assign(combined, latest);
+    return combined;
+  }, {});
+}
 
 /**
  * Patches the `Observable` prototype to include a method for pausing
@@ -36,6 +48,14 @@ Observable.prototype.pausable = function(paused$) {
  */
 Observable.prototype.parseXML = function(isXML) {
   return isXML ? this.switchMap(data => parseXMLAsObservable(data)) : this;
+}
+
+/**
+ * Binds the callback of the incoming client's `send()` method
+ * to an observable that emits an error if the send fails.
+ */
+Observable.fromSocketSend = function(client, message) {
+  return Observable.bindNodeCallback(client.send).call(client, message);
 }
 
 exports = module.exports = { Observable, BehaviorSubject };
