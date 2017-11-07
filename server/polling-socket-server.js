@@ -63,12 +63,12 @@ class PollingSocketServer {
     this.paused$ = this.connection$
       .map(() => this.wss.clients.size === 0)
       .distinctUntilChanged()
-      .do(status => this.socketLogger.log('interval', status ? 'idle' : 'active'))
+      .do(status => this.logger.log('interval', status ? 'idle' : 'active'))
       .share();
 
-    this.socketLogger = new SocketLogger(logging)
-    this.intervalManager = new IntervalManager(this.paused$, this.socketLogger);
-    this.pollManager = new PollManager(this.intervalManager, this._params, this.socketLogger);
+    this.logger = new SocketLogger(logging);
+    this.intervalManager = new IntervalManager(this.paused$, this.logger);
+    this.pollManager = new PollManager(this.intervalManager, this._params, this.logger);
 
     /**
      * Enable periodic checks for dropped connections if enabled.
@@ -118,8 +118,8 @@ class PollingSocketServer {
     }
 
     return Observable.bindNodeCallback(this.app.listen)(port)
-      .catch(error => this.socketLogger.log('error', error))
-      .subscribe(() => this.socketLogger.log('server', `listening on port ${port}`));
+      .catch(error => this.logger.log('error', error))
+      .subscribe(() => this.logger.log('server', `listening on port ${port}`));
   }
 
   /**
@@ -151,7 +151,7 @@ class PollingSocketServer {
      */
     return Observable
       .merge(this.connectionOpened$, this.connectionClosed$)
-      .do(state => this.socketLogger.log('websocket', `client ${state ? '' : 'dis'}connected, pool: ${this.wss.clients.size}`))
+      .do(state => this.logger.log('websocket', `client ${state ? '' : 'dis'}connected, pool: ${this.wss.clients.size}`))
       .share();
   }
 
