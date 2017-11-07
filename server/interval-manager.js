@@ -35,6 +35,7 @@ class IntervalManager {
         .pausable(this.pauser)
         .do(tick => this.logger.log('interval', `${value}ms, tick ${tick}`))
         .share();
+      this.intervals[value].subscribe();
     }
     return this.intervals[value];
   }
