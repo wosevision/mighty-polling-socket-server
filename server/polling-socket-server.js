@@ -10,7 +10,10 @@ const expressWs = require('express-ws');
 const { Observable, BehaviorSubject } = require('./rxjs');
 const { RxHR } = require('@akanass/rx-http-request');
 
+const { IntervalManager } = require('./interval-manager');
+const { PollManager } = require('./poll-manager');
 const { SocketMonitor } = require('./socket-monitor');
+const { SocketLogger } = require('./socket-logger');
 
 /**
  * Core class for instantiating a new server.
@@ -36,7 +39,7 @@ class PollingSocketServer {
     /**
      * Save some options to parameter map.
      */
-    this._params = { defaultInterval, requestOptions, logging, stats };
+    this._params = { defaultInterval, requestOptions, stats };
 
     /**
      * Creates an `express` app, mounts the express app
@@ -45,34 +48,6 @@ class PollingSocketServer {
      */
     this.app = expressApp;
     this.wss = expressWs(this.app, null, { wsOptions }).getWss();
-    
-    /**
-     * A map to hold pausable intervals, which ensures there is
-     * at most one interval running per interval time value;
-     * property to hold default interval value.
-     */
-    this.interval$ = {};
-
-    /**
-     * Maps to hold:
-     * - `BehaviorSubject`s that will be used to aggregate
-     * received poll data
-     * - `Observable`s from the subjects that clients can
-     * subscribe to for receiving the subject's data
-     * - "pollers", observables that connect a data source
-     * to an interval and emit new data to its subject
-     */
-    this._subjects = {};
-    this._observables = {};
-    this._pollers = {};
-
-    /**
-     * Holds a logging subject and exposes its observable.
-     */
-    this._logger = new BehaviorSubject(null);
-    this.logger$ = this._logger.asObservable()
-      .filter(Boolean)
-      .map(({ source, message }) => `[${source}] ${message}`);
 
     /**
      * Tracks all connection events (open and close) in a single
@@ -88,18 +63,18 @@ class PollingSocketServer {
     this.paused$ = this.connection$
       .map(() => this.wss.clients.size === 0)
       .distinctUntilChanged()
-      .do(status => this._log('interval', status ? 'idle' : 'active'))
+      .do(status => this.socketLogger.log('interval', status ? 'idle' : 'active'))
       .share();
+
+    this.socketLogger = new SocketLogger(logging)
+    this.intervalManager = new IntervalManager(this.paused$, this.socketLogger);
+    this.pollManager = new PollManager(this.intervalManager, this._params, this.socketLogger);
 
     /**
      * Enable periodic checks for dropped connections if enabled.
      */
     if (checkHeartbeat) {
       this._enableHeartbeatCheck();
-    }
-    
-    if (logging) {
-      this.logger$.subscribe(log => logging && console.log(log));
     }
   }
 
@@ -118,42 +93,8 @@ class PollingSocketServer {
    * @memberof PollingSocketServer
    */
   sources(sources) {
-    /**
-     * Adds new `BehaviorSubject`s to hold the incoming data from sources.
-     */
-    this._subjects = {
-      ...this._subjects,
-      ...sources.reduce((final, { type }) => {
-        final[type] = new BehaviorSubject(null);
-        return final;
-      }, {})
-    };
 
-    /**
-     * Adds observable-only versions of each subject for connected clients
-     * to individually subscribe to, so that the latest feed data
-     * can be shared between clients.
-     */
-    this._observables = {
-      ...this._observables,
-      ...sources.reduce((final, { type }) => {
-        final[type] = this._subjects[type].asObservable();
-        return final;
-      }, {})
-    };
-    
-    /**
-     * Adds fully-instantiated polling observables, keyed by source
-     * type to match the `subjects` and `observables`. Provides a way
-     * for each source to have its own comparison and result logic.
-     */
-    this._pollers = {
-      ...this._pollers,
-      ...sources.reduce((final, source) => {
-        final[source.type] = this._getPoll(source);
-        return final;
-      }, {})
-    };
+    this.pollManager.addSources(sources);
     
     /**
      * Initializes an `express` app route for each source type.
@@ -161,7 +102,7 @@ class PollingSocketServer {
      * and as a pointer to the correct `poller` and feed.
      */
     sources.forEach(({ type, path }) => {
-      this.app.ws(`/${path || type}`, client => this._openClientPoll(type, client));
+      this.app.ws(`/${path || type}`, client => this.pollManager.openClientPoll(type, client));
     });
   }
 
@@ -177,88 +118,8 @@ class PollingSocketServer {
     }
 
     return Observable.bindNodeCallback(this.app.listen)(port)
-      .catch(error => this._log('error', error))
-      .subscribe(() => this._log('server', `listening on port ${port}`));
-  }
-
-  /**
-   * Transforms a `source` object into a `poller`, which are each
-   * responsible for:
-   * 
-   * - attaching the source to an interval returned by `_getInterval()`
-   * - sending HTTP requests to the source on each tick
-   * - comparing the last received data to the latest
-   * - transforming data after it has been marked as changed
-   * - passing transformed data to the source's associated `BehaviorSubject`
-   * so it can be aggregated into that sources observable data feed
-   * 
-   * @param {object} params
-   * @param {string} type The data/message type
-   * @param {string} url The endpoint to poll via http
-   * @param {object} options Optional request options for this poll
-   * @param {(oldData, newData) => boolean} compare A comparison function
-   * @param {(data) => any} transform A transformation function
-   * @param {boolean} xml Whether to parse data as XML
-   * @returns {Observable<any>}
-   * @memberof PollingSocketServer
-   */
-  _getPoll({
-    type,
-    url,
-    options = {},
-    interval = this._params.defaultInterval,
-    compare = (_, __) => (_ === __),
-    transform = _ => _,
-    xml = false,
-    json = true
-  }) {
-    return this._getInterval(interval)
-      .do(() => this._log('polling', `checking: ${type}`))
-      .switchMap(() => RxHR.get(url, { ...this._params.requestOptions, ...options }))
-      .do(() => this._log('polling', `checked: ${type}`))
-      .map(response => response.body)
-      .parseJSON(json)
-      .parseXML(xml)
-      .distinctUntilChanged(compare)
-      .map(transform)
-      .do(data => {
-        this._log('polling', `changed: ${type}`)
-        this._subjects[type].next(data);
-      })
-      .catch(error => {
-        this._log('error:polling', error)
-        return Observable.throw(error);
-      })
-      .share();
-  }
-
-  /**
-   * Generates a pausable interval that ticks every _x_ ms and
-   * can be paused/resumed by emitting true and false from the
-   * `paused$` observable, and saves it to the `interval$` map.
-   * 
-   * If there is already a saved interval, returns the interval
-   * so there is only one running per time value.
-   * 
-   * @param {number} interval The time to elapse between interval ticks
-   * @returns {Observable<number>}
-   * @memberof PollingSocketServer
-   */
-  _getInterval(value) {
-    if (!this.interval$[value]) {
-      /**
-       * If there is no interval already saved in the `interval$` map
-       * by this number, initialize it.
-       */
-      this.interval$[value] = Observable.interval(value)
-        .pausable(this.paused$)
-        .do(tick => this._log('interval', `${value}ms, tick ${tick}`))
-        .share();
-    }
-    /**
-     * Subscribe to the new or pre-existing interval and return it.
-     */
-    return this.interval$[value];
+      .catch(error => this.socketLogger.log('error', error))
+      .subscribe(() => this.socketLogger.log('server', `listening on port ${port}`));
   }
 
   /**
@@ -290,57 +151,8 @@ class PollingSocketServer {
      */
     return Observable
       .merge(this.connectionOpened$, this.connectionClosed$)
-      .do(state => this._log('websocket', `client ${state ? '' : 'dis'}connected, pool: ${this.wss.clients.size}`))
+      .do(state => this.socketLogger.log('websocket', `client ${state ? '' : 'dis'}connected, pool: ${this.wss.clients.size}`))
       .share();
-  }
-  
-  /**
-   * Sets up subscriptions for connected socket clients. When
-   * a new client hits an endpoint, this method is used to:
-   * 
-   * - subscribe to the appropriate poll to activate it
-   * - subscribe to the observable that will emit that poll's results
-   * - provide its own teardown (unsubscribe) logic.
-   * 
-   * @param {string} type 
-   * @param {any} client
-   * @memberof PollingSocketServer
-   */
-  _openClientPoll(type, client) {
-    this._log('app', `connection to /${type} detected`);
-    
-    /**
-     * Subsribes to an source type's poller to activate it.
-     */
-    const polling = this._pollers[type].subscribe(); 
-
-    /**
-     * Subscribes to the source type's observable `BehaviorSubject`
-     * to receive incoming data that has been marked as new and the
-     * last emitted data that was marked as new. Formats a message
-     * for the client and sends it using the bound `sendAsObservable`.
-     */
-    const feed = this._observables[type]
-      .filter(Boolean)
-      .map(data => JSON.stringify({ type, data }))
-      .do(message => this._log('sending', message))
-      .flatMap(message => Observable.fromSocketSend(client, message))
-      .catch(error => {
-        this._log('error:sending', error)
-        return Observable.throw(error);
-      })
-      .subscribe(() => this._log('sending', 'send success'));
-  
-    /**
-     * Subscribes to the active socket connection's `close` event
-     * in order to clean up all subscriptions that were initiated
-     * by the connection (including itself).
-     */
-    const closed = Observable.fromEvent(client, 'close').subscribe(() => {
-      polling.unsubscribe();
-      feed.unsubscribe();
-      closed.unsubscribe();
-    });
   }
 
   /**
@@ -353,8 +165,8 @@ class PollingSocketServer {
   _enableHeartbeatCheck() {
     function heartbeat() {
       this.isAlive = true;
-    }
-    this._getInterval(10000)
+    };
+    this.intervalManager.getInterval(30000)
       .do(() => this.wss.clients.forEach(ws => {
         if (ws.isAlive === false) return ws.terminate();
         ws.isAlive = false;
@@ -365,17 +177,6 @@ class PollingSocketServer {
         ws.isAlive = true;
         ws.on('pong', heartbeat);
       });
-  }
-
-  /**
-   * Sends a log message to the logger `BehaviorSubject` – the
-   * log is only processed if it is enabled (and subscribed to).
-   * 
-   * @param {string} source
-   * @param {string} message 
-   */
-  _log(source, message) {
-    this._logger.next({ source, message });
   }
 }
 
