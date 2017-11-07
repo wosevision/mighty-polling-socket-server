@@ -210,6 +210,7 @@ class PollingSocketServer {
     compare = (_, __) => (_ === __),
     transform = _ => _,
     xml = false,
+    json = false
   }) {
     return this._getInterval(interval)
       .do(() => this._log('polling', `checking: ${type}`))
@@ -217,6 +218,7 @@ class PollingSocketServer {
       .do(() => this._log('polling', `checked: ${type}`))
       .map(response => response.body)
       .parseXML(xml)
+      .parseJSON(json)
       .distinctUntilChanged(compare)
       .map(transform)
       .do(data => {

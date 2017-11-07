@@ -51,6 +51,14 @@ Observable.prototype.parseXML = function(isXML) {
 }
 
 /**
+ * Patches the `Observable` prototype to include a method for parsing
+ * XML from XML-like strings and observing the output.
+ */
+Observable.prototype.parseJSON = function (isJSON) {
+  return isJSON ? this.map(data => JSON.parse(data)) : this;
+}
+
+/**
  * Binds the callback of the incoming client's `send()` method
  * to an observable that emits an error if the send fails.
  */

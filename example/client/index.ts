@@ -8,6 +8,10 @@ import {
   RSSExampleModel,
   TYPE_RSS
 } from './rss-example';
+import {
+  JSONExampleItem,
+  TYPE_JSON
+} from './json-example';
 
 const rss = new RSSUtility();
 const client = new SocketPollClient();
@@ -31,6 +35,22 @@ client.on<TYPE_RSS, RSSFeed>(TYPE_RSS, ({ data }) => {
     <hr/>`).join('\n');
 
     document.getElementById('rss-example').innerHTML = [header, html].join('\n');
+  }
+});
+
+client.on<TYPE_JSON, JSONExampleItem[]>(TYPE_JSON, ({ data }) => {
+
+  if (data.length) {
+    const header = '<h2>JSON Example</h2>';
+    const html = data.map((item) => `<div class="rss-example">
+      <a href="${ item.link || item.guid}" ${item.title ? `title="${item.title}"` : ''}></a>
+      ${ item.title ? `<p><strong><a href="${item.link || item.guid}">${item.title}</strong></a></p>` : ''}
+      <p>${ item.description}</p>
+      <small>${ item.pubDate}</small>
+    </div>
+    <hr/>`).join('\n');
+
+    document.getElementById('json-example').innerHTML = [header, html].join('\n');
   }
 });
 
