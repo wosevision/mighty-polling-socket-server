@@ -18,8 +18,7 @@ const SOURCE_LIST = [
   {
     type: 'json-example',
     url: 'http://localhost:8080/json.json',
-    compare: ([{ pubDate: last }], [{ pubDate: current }]) => last === current,
-    json: true
+    compare: ([{ pubDate: last }], [{ pubDate: current }]) => last === current
   }
 ];
 

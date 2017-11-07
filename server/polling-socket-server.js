@@ -210,15 +210,15 @@ class PollingSocketServer {
     compare = (_, __) => (_ === __),
     transform = _ => _,
     xml = false,
-    json = false
+    json = true
   }) {
     return this._getInterval(interval)
       .do(() => this._log('polling', `checking: ${type}`))
       .switchMap(() => RxHR.get(url, { ...this._params.requestOptions, ...options }))
       .do(() => this._log('polling', `checked: ${type}`))
       .map(response => response.body)
-      .parseXML(xml)
       .parseJSON(json)
+      .parseXML(xml)
       .distinctUntilChanged(compare)
       .map(transform)
       .do(data => {
