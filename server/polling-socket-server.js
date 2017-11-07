@@ -163,14 +163,17 @@ class PollingSocketServer {
    * @memberof PollingSocketServer
    */
   _enableHeartbeatCheck() {
+    const { logger } = this;
     function heartbeat() {
       this.isAlive = true;
+      logger.log('heartbeat', 'pong');
     };
-    this.intervalManager.getInterval(30000)
+    this.intervalManager.getInterval(20000)
       .do(() => this.wss.clients.forEach(ws => {
         if (ws.isAlive === false) return ws.terminate();
         ws.isAlive = false;
         ws.ping('', false, true);
+        this.logger.log('heartbeat', 'ping');
       })).subscribe();
     this.connectionOpened$
       .subscribe(ws => {
