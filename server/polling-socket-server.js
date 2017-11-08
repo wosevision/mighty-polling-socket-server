@@ -85,20 +85,17 @@ class PollingSocketServer {
 
   /**
    * Adds sources to the list of things to poll, i.e. instantiates polling
-   * routes that clients can connect to. Each unique `source` sets up:
+   * routes that clients can connect to. Each unique `source` sets up
+   * a route for clients to connect to, which activates a poller and
+   * subscribes/unsubscribes to its source feed when connected/disconnected.
    * 
-   * - a subject to receive new data, e.g. the polling "input"
-   * - an observable of each subject as a feed, e.g. the polling "output"
-   * - a poller from `_getPoll()` for comparing and passing the source's data,
-   * e.g. the polling "pipeline"
-   * - a route for clients to connect to, which activates a poller and
-   * subscribes/unsubscribes to its source feed when connected/disconnected
-   * 
-   * @param {any} sources 
+   * @param {object[]} sources 
    * @memberof PollingSocketServer
    */
   sources(sources) {
-
+    /**
+     * Add the provided sources to the `PollManager`'s registry.
+     */
     this.pollManager.addSources(sources);
     
     /**
@@ -118,10 +115,16 @@ class PollingSocketServer {
    * @memberof PollingSocketServer
    */
   broadcast(port = 8080) {
+    /**
+     * If `stats` is enabled, instantiate a `SocketMonitor` instance.
+     */
     if (this._params.stats) {
       this._statMonitor = new SocketMonitor(this);
     }
 
+    /**
+     * Listen on the given port; report and handle errors.
+     */
     return Observable.bindNodeCallback(this.app.listen)(port)
       .catch(error => this.logger.log('error', error))
       .subscribe(() => this.logger.log('server', `listening on port ${port}`));

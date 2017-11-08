@@ -20,6 +20,17 @@ class PollManager {
     this.params = params;
     this.logger = logger;
   }
+  /**
+   * Adds sources to the list of things to poll. Each unique `source` sets up:
+   *
+   * - a subject to receive new data, e.g. the polling "input"
+   * - an observable of each subject as a feed, e.g. the polling "output"
+   * - a poller from `getPoll()` for comparing and passing the source's data,
+   * e.g. the polling "pipeline"
+   * 
+   * @param {object[]} sources
+   * @memberof PollManager
+   */
   addSources(sources) {
     /**
      * Adds new `BehaviorSubject`s to hold the incoming data from sources.
@@ -78,7 +89,7 @@ class PollManager {
    * @param {(data) => any} transform A transformation function
    * @param {boolean} xml Whether to parse data as XML
    * @returns {Observable<any>}
-   * @memberof PollingSocketServer
+   * @memberof PollManager
    */
   getPoll({
     type,
@@ -120,8 +131,8 @@ class PollManager {
    * - provide its own teardown (unsubscribe) logic.
    * 
    * @param {string} type 
-   * @param {any} client
-   * @memberof PollingSocketServer
+   * @param {object} client
+   * @memberof PollManager
    */
   openClientPoll(type, client) {
     this.logger.log('app', `connection to /${type} detected`);
