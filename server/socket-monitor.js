@@ -10,7 +10,7 @@ class SocketMonitor {
 
     const {
       connection$,
-      intervalManager,
+      interval$,
       paused$,
       logger$,
       app
@@ -76,10 +76,10 @@ class SocketMonitor {
       }, {});
   }
 
-  getIntervalStats(intervalManager) {
-    const mapToTicks = key => intervalManager._intervals[key].map(tick => ({ [key]: tick }));
+  getIntervalStats(interval$) {
+    const mapToTicks = key => interval$[key].map(tick => ({ [key]: tick }));
     return Observable.merge(
-      ...Object.keys(intervalManager._intervals).map(mapToTicks)
+      ...Object.keys(interval$).map(mapToTicks)
     ).accumulate();
   }
 }
