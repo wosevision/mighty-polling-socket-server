@@ -1,8 +1,3 @@
-/**
- * Import specialized versions of `Observable` and `BehaviorSubject`
- * that have been augmented with imported operators and custom
- * instance methods.
- */
 const { Observable, BehaviorSubject } = require('./rxjs');
 const { RxHR } = require('@akanass/rx-http-request');
 
