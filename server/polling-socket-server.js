@@ -61,9 +61,19 @@ class PollingSocketServer {
       .do(status => this.logger.log('interval', status ? 'idle' : 'active'))
       .share();
 
+    /**
+     * Instantiate and assign new instances of lower-level classes.
+     */
     this.logger = new SocketLogger(logging);
     this.intervalManager = new IntervalManager(this.paused$, this.logger);
     this.pollManager = new PollManager(this.intervalManager, this._params, this.logger);
+
+    /**
+     * Add aliases to internal class properties for backwards
+     * compatibility reasons.
+     */
+    this.interval$ = this.intervalManager.intervals;
+    this.logger$ = this.logger.log$;
 
     /**
      * Enable periodic checks for dropped connections if enabled.
