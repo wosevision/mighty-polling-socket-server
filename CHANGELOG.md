@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.1]
+### Changed
+- Separated intervals and polls into their own classes for easier internal management; both can be found as properties `intervalManager` and `pollManager` on the core class.
+  - The interval manager's interval observables can still be subscribed to from an alias property (`interval$`) for backwards compatibility
+  - Logging was also moved into its own class, but can still be subscribed to at `logger$`
+
+### Fixed
+- Ping/pong response for `checkHeartbeat` fixed; this feature now works as intended.
+- Ensured each interval has at least one subscriber, fixes bug where a source whose `interval` overrides the `defaultInterval` doesn't send data.
 
 ## [1.2.0]
 ### Added
