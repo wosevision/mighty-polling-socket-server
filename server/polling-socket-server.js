@@ -105,6 +105,7 @@ class PollingSocketServer {
      */
     sources.forEach(({ type, path }) => {
       this.app.ws(`/${path || type}`, client => this.pollManager.openClientPoll(type, client));
+      this.logger.log('server', `route enabled at /${path || type}`)
     });
   }
 
