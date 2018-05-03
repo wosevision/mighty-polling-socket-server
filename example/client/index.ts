@@ -14,7 +14,7 @@ import {
 } from './json-example';
 
 const rss = new RSSUtility();
-const client = new SocketPollClient();
+const client = new SocketPollClient('ws://localhost:8080');
 
 /**
  * Listens to incoming service disruption socket data. Responsible for

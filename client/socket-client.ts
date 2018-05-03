@@ -29,6 +29,8 @@ export class SocketPollClient {
     [type: string]: (items: any) => void
   } = {};
 
+  constructor(private baseUrl?: string) { }
+
   /**
    * @template T 
    * @param {string} type 
@@ -52,7 +54,7 @@ export class SocketPollClient {
    * @memberof SocketPollClient
    */
   private addSocketListener<T extends string, D>(type: T) {
-    const socket = new SocketConnection(null, type)
+    const socket = new SocketConnection(this.baseUrl, type)
     socket.onMessage(event => this.onMessage<T, D>(type, event));
     console.log(`[socket] added listener for "${type}"`);
   }
