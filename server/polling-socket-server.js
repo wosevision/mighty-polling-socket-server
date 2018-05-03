@@ -6,6 +6,7 @@ const { Observable, BehaviorSubject } = require('./rxjs');
 const { RxHR } = require('@akanass/rx-http-request');
 
 const { IntervalManager } = require('./interval-manager');
+const { SessionManager } = require('./session-manager');
 const { PollManager } = require('./poll-manager');
 const { SocketMonitor } = require('./socket-monitor');
 const { SocketLogger } = require('./socket-logger');
@@ -27,6 +28,7 @@ class PollingSocketServer {
     checkHeartbeat = false,
     expressApp = express(),
     requestOptions,
+    sessionStore,
     wsOptions,
     logging = true,
     stats = false
@@ -34,7 +36,7 @@ class PollingSocketServer {
     /**
      * Save some options to parameter map.
      */
-    this._params = { defaultInterval, requestOptions, stats };
+    this._params = { defaultInterval, requestOptions, sessionStore, wsOptions, stats };
 
     /**
      * Creates an `express` app, mounts the express app
@@ -66,6 +68,7 @@ class PollingSocketServer {
      */
     this.logger = new SocketLogger(logging);
     this.intervalManager = new IntervalManager(this.paused$, this.logger);
+    this.sessionManager = new SessionManager(this.app, this._params, this.logger);
     this.pollManager = new PollManager(this.intervalManager, this._params, this.logger);
 
     /**
