@@ -1,9 +1,7 @@
-const path = require('path');
 const express = require('express');
 const expressWs = require('express-ws');
 
-const { Observable, BehaviorSubject } = require('./rxjs');
-const { RxHR } = require('@akanass/rx-http-request');
+const { Observable } = require('./rxjs');
 
 const { IntervalManager } = require('./interval-manager');
 const { SessionManager } = require('./session-manager');
