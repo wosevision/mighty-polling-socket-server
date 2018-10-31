@@ -3,7 +3,9 @@ const SESSION_SECRET = 'it\'s a beautiful day in the neigh-bor-hood!'
 class SessionManager {
   constructor(app, params, logger) {
     app.use(params.sessionStore || require('express-session')({
-      secret: SESSION_SECRET
+      secret: SESSION_SECRET,
+      resave: true,
+      saveUninitialized: false
     }));
     logger.log('session', 'manager started');
   }
