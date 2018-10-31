@@ -35,7 +35,7 @@
     "build": "tsc -t es5 -m commonjs && tsc --outDir dist-esm && NODE_ENV=production webpack -p --progress",
     "test-client": "npm run test-server & webpack-dev-server",
     "test-server": "nodemon example/server --harmony",
-    "preversion": "npm run build",
+    "version": "npm run build && git add -A _bundles dist dist-esm",
     "postversion": "git push --follow-tags && npm publish"
   },
   "devDependencies": {
