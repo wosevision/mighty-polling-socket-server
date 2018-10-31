@@ -16,6 +16,9 @@ import {
 const rss = new RSSUtility();
 const client = new SocketPollClient('ws://localhost:8080');
 
+const rssContainer = document.getElementById('rss-example');
+const jsonContainer = document.getElementById('json-example');
+
 /**
  * Listens to incoming service disruption socket data. Responsible for
  * mapping `ServiceDisruptionRSSItem` objects to more useful `ServiceDisruption`
@@ -34,7 +37,9 @@ client.on<TYPE_RSS, RSSFeed>(TYPE_RSS, ({ data }) => {
     </div>
     <hr/>`).join('\n');
 
-    document.getElementById('rss-example').innerHTML = [header, html].join('\n');
+    rssContainer.innerHTML = [header, html].join('\n');
+  } else {
+    rssContainer.innerHTML = '';
   }
 });
 
@@ -50,7 +55,9 @@ client.on<TYPE_JSON, JSONExampleItem[]>(TYPE_JSON, ({ data }) => {
     </div>
     <hr/>`).join('\n');
 
-    document.getElementById('json-example').innerHTML = [header, html].join('\n');
+    jsonContainer.innerHTML = [header, html].join('\n');
+  } else {
+    jsonContainer.innerHTML = '';
   }
 });
 

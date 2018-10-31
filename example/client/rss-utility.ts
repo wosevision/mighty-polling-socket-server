@@ -31,7 +31,7 @@ export class RSSUtility {
   parseItems<I extends RSS.Item, T>(data: RSSFeed, transform?: (item: I) => T): (T | I)[] {
     let channelItems: (T | I)[];
     try {
-      channelItems = <I[]>data.rss.channel[0].item;
+      channelItems = <I[]>data.rss.channel[0].item || [];
     } catch (err) {
       console.warn(`Error parsing RSS items: ${err}`);
       channelItems = [];

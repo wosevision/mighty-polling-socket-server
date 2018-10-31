@@ -10,9 +10,22 @@ const SOURCE_LIST = [
     type: 'rss-example',
     url: 'http://localhost:8080/rss.xml',
     compare: (
-      { rss: { channel: [{ item: [{ pubDate: [oldData] }] }] } },
-      { rss: { channel: [{ item: [{ pubDate: [newData] }] }] } },
-    ) => oldData === newData,
+      { rss: { channel: [{ item: oldItem }] } },
+      { rss: { channel: [{ item: newItem }] } },
+    ) => {
+      if (oldItem && oldItem.length) {
+        if (!newItem || !newItem.length || newItem.length !== oldItem.length) {
+          return false;
+        }
+        if (newItem && newItem.length) {
+          const [{ pubDate: [oldLastDate] }] = oldItem;
+          const [{ pubDate: [newLastDate] }] = newItem;
+          return oldLastDate === newLastDate;
+        }
+      } else {
+        return !(newItem && newItem.length);
+      }
+    },
     xml: true
   },
   {
