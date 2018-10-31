@@ -11,7 +11,7 @@ export class SocketConnection {
     if (!url) {
       const { location } = document;
       const { host, protocol, port } = location;
-      url = `${protocol.replace(/http/, 'ws')}//${ host.replace(/:.*/, '') }${ port ? `:${port}` : ':8080' }`;
+      url = `${protocol.replace(/http/, 'ws')}//${ host.replace(/:.*/, '') }${ port ? `:${port}` : '' }`;
     }
     url = `${url}/${endpoint || ''}`;
     this.connection = new WebSocket(url);
