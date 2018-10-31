@@ -12,7 +12,7 @@ var SocketConnection = /** @class */ (function () {
         if (!url) {
             var location_1 = document.location;
             var host = location_1.host, protocol = location_1.protocol, port = location_1.port;
-            url = protocol.replace(/http/, 'ws') + "//" + host.replace(/:.*/, '') + (port ? ':8080' : '');
+            url = protocol.replace(/http/, 'ws') + "//" + host.replace(/:.*/, '') + (port ? ":" + port : '');
         }
         url = url + "/" + (endpoint || '');
         this.connection = new WebSocket(url);

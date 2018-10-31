@@ -19,7 +19,8 @@ var _1 = require(".");
  * @class SocketPollClient
  */
 var SocketPollClient = /** @class */ (function () {
-    function SocketPollClient() {
+    function SocketPollClient(baseUrl) {
+        this.baseUrl = baseUrl;
         this._typeCallbacks = {};
     }
     /**
@@ -45,7 +46,7 @@ var SocketPollClient = /** @class */ (function () {
      */
     SocketPollClient.prototype.addSocketListener = function (type) {
         var _this = this;
-        var socket = new _1.SocketConnection(null, type);
+        var socket = new _1.SocketConnection(this.baseUrl, type);
         socket.onMessage(function (event) { return _this.onMessage(type, event); });
         console.log("[socket] added listener for \"" + type + "\"");
     };

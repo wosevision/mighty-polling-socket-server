@@ -21,7 +21,9 @@ export declare type SocketPollMessage<T extends string, D> = {
  * @class SocketPollClient
  */
 export declare class SocketPollClient {
+    private baseUrl?;
     private _typeCallbacks;
+    constructor(baseUrl?: string);
     /**
      * @template T
      * @param {string} type
@@ -40,7 +42,7 @@ export declare class SocketPollClient {
      * @param {T} type
      * @memberof SocketPollClient
      */
-    private addSocketListener<T, D>(type);
+    private addSocketListener;
     /**
      * Receives a socket's `MessageEvent`; parses the raw string data
      * into a usable object; determines the type of emergency message
@@ -54,5 +56,5 @@ export declare class SocketPollClient {
      * @param {MessageEvent} event
      * @memberof SocketPollClient
      */
-    private onMessage<T, D>(type, event);
+    private onMessage;
 }

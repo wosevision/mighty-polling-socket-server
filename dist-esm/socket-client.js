@@ -17,7 +17,8 @@ import { SocketConnection } from '.';
  * @class SocketPollClient
  */
 export class SocketPollClient {
-    constructor() {
+    constructor(baseUrl) {
+        this.baseUrl = baseUrl;
         this._typeCallbacks = {};
     }
     /**
@@ -42,7 +43,7 @@ export class SocketPollClient {
      * @memberof SocketPollClient
      */
     addSocketListener(type) {
-        const socket = new SocketConnection(null, type);
+        const socket = new SocketConnection(this.baseUrl, type);
         socket.onMessage(event => this.onMessage(type, event));
         console.log(`[socket] added listener for "${type}"`);
     }
